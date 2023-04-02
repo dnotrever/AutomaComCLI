@@ -1,0 +1,10 @@
+/__pycache__
+tempCodeRunnerFile.py
+sheets/
+tests.py
+.env
+infra_configs.py
+CONF.py
+main.spec
+build/
+dist/
