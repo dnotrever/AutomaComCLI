@@ -1,7 +1,8 @@
-import dataframes
+# import dataframes
 import date_config as Date
 import format_address as Address
 import format_phone as Phone
+import pandas as pd
 
 def generate_emergency(option, name, condominium, block, apt, complement, phone, login, band, current_date):
 
@@ -26,9 +27,13 @@ def generate_emergency(option, name, condominium, block, apt, complement, phone,
 
 def customer_infos(option):
 
-    customer_infos = dataframes.infos
+    condominiums = pd.read_excel('sheets/Condominiums.xlsx', sheet_name='Condomínios')
+    customer_infos = pd.read_excel("sheets/Customer_Infos.xlsx")
 
-    for _, row in customer_infos.iterrows():
+    infos = pd.merge(customer_infos, condominiums, on='Cond_Cod')
+    infos.drop('Cond_Cod', axis=1, inplace=True)
+
+    for _, row in infos.iterrows():
 
         name = row['Customer']
         condominium = row['Condominium']

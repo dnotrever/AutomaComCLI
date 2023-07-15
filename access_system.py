@@ -1,7 +1,7 @@
 import Selenium as SEL
 import CONF
 from Selenium import By, Keys
-from Selenium import clickable, located
+from Selenium import clickable, located, all_located
 
 driver = SEL.get_driver()
 wait = SEL.get_wait(driver)

@@ -1,7 +1,7 @@
-def transfer_attendances(op_code='0', attend='RAPH', test=False):
+def transfer_attendances(op_code='0', attend='RAP', test=False):
 
     import time
-    from access_system import By, Keys, clickable, driver, wait, actions, open_system
+    from access_system import By, Keys, clickable, all_located, wait, actions, open_system
 
     open_system(2, op_code)
 
@@ -9,7 +9,8 @@ def transfer_attendances(op_code='0', attend='RAPH', test=False):
 
     def define_attend(code):
         attend = {
-            'RAPH': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[11]',
+            'RAP': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[11]',
+            'ALE': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[2]',
         }
         return attend.get(code, None)
 
@@ -18,13 +19,15 @@ def transfer_attendances(op_code='0', attend='RAPH', test=False):
 
     time.sleep(2)
 
-    chats = driver.find_elements(By.CLASS_NAME, 'chat')
+    attendances = wait.until(all_located((By.CLASS_NAME, 'chat')))
 
-    for chat in chats:
+    for customer in attendances:
 
-        chat.click()
+        time.sleep(1)
 
-        order = chat.get_attribute('style').split('-')[1][:2]
+        customer.click()
+
+        order = customer.get_attribute('style').split('-')[1][:2]
 
         if order == '16':
 
@@ -81,4 +84,4 @@ def transfer_attendances(op_code='0', attend='RAPH', test=False):
                 ## OK
                 wait.until(clickable((By.CLASS_NAME, 'btn-blue'))).click()
 
-# transfer_attendaces('0', 'RAPH', True)
+# transfer_attendances('0', 'RAP', False)

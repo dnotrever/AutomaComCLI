@@ -29,7 +29,7 @@ def customer_infos(op_code, customer_id):
     actions.double_click(wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[6]/table/tbody/tr[1]')))).perform()
  
     ## Get NAME
-    name = wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[2]/dd/input'))).get_attribute('value')
+    name = wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/input'))).get_attribute('value')
     
     ## Address
     wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[2]'))).click()
@@ -71,8 +71,9 @@ def customer_infos(op_code, customer_id):
     actions.send_keys(Keys.ESCAPE).perform()
 
     infos = [[name, condominium, block, apt, complement, phone, login, band]]
+    
     df = pd.DataFrame(infos, columns=['Customer', 'Cond_Cod', 'Block', 'Apt', 'Complement', 'Phone', 'Login', 'Band'])
-    df.to_excel('sheets/Customer_Infos.xlsx', index = False, header=True)
+    df.to_excel('sheets/Customer_Infos.xlsx', index=False, header=True)
 
     ## Logout
     wait.until(clickable((By.XPATH, '/html/body/div[1]/div[1]/div[2]/div/i'))).click()

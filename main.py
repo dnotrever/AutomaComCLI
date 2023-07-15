@@ -34,121 +34,15 @@ def commandLine():
             
         elif arr_command[0] == 'logins':
             
-            if len(arr_command) > 1:
-                        
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: param{reset}')
-                    commandLine()    
-
-                elif arr_command[1] != '?':
-                    
-                    op_cod = arr_command[1]
-                            
-                    if len(arr_command) < 3:
-
-                        try:
-                            import logins
-                            msg = logins.generate_logins()
-                            print(f'\n {others}>> {success}{msg}{reset}')
-                            historic.append(''.join(f'{now} - {msg}'))
-                            
-                            import register_logins as Logins
-                            msg = Logins.register_logins(op_cod)
-                            print(f'\n {others}>> {success}{msg}{reset}')
-                        
-                        except Exception as err:
-                            print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                            commandLine()
-                        
-                    else: messageError(3)
-                            
-                else: messageError(2)
-                        
-            else: messageError(1)
+            pass
                 
         elif arr_command[0] == 'complet':
             
-            if len(arr_command) > 1:
-                        
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: param{reset}')
-                    commandLine()    
-
-                elif arr_command[1] == '-l':
-                    
-                    try:
-                        import completions
-                        msg = completions.register_ending_services()
-                        print(f'\n {others}>> {success}{msg}{reset}')
-                        historic.append(''.join(f'{now} - {msg}'))
-                    
-                    except Exception as err:
-                        print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                        commandLine()
-
-                elif arr_command[1] != '?' or arr_command[1] != '-l':
-                    
-                    op_cod = arr_command[1]
-                            
-                    if len(arr_command) < 3:
-
-                        try:
-                            import os_completion as Complet
-                            msg = Complet.os_completion(op_cod)
-                            print(f'\n {others}>> {success}{msg}{reset}')
-                            historic.append(''.join(f'{now} - {msg}'))
-                        
-                        except Exception as err:
-                            print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                            commandLine()
-                        
-                    else: messageError(3)
-                            
-                else: messageError(2)
-                        
-            else: messageError(1)
+            pass
                 
         elif arr_command[0] == 'scheds':
             
-            if len(arr_command) > 1:
-                        
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: param{reset}')
-                    commandLine()    
-
-                elif arr_command[1] == '-l':
-                    
-                    try:
-                        import schedulings
-                        msg = schedulings.register_customers_schedulings()
-                        print(f'\n {others}>> {success}{msg}{reset}')
-                        historic.append(''.join(f'{now} - {msg}'))
-                    
-                    except Exception as err:
-                        print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                        commandLine()
-
-                elif arr_command[1] != '?' or arr_command[1] != '-l':
-                    
-                    op_cod = arr_command[1]
-                            
-                    if len(arr_command) < 3:
-
-                        try:
-                            import os_scheduling as Scheds
-                            msg = Scheds.os_scheduling(op_cod)
-                            print(f'\n {others}>> {success}{msg}{reset}')
-                            historic.append(''.join(f'{now} - {msg}'))
-                        
-                        except Exception as err:
-                            print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                            commandLine()
-                        
-                    else: messageError(3)
-                            
-                else: messageError(2)
-                        
-            else: messageError(1)
+            pass
                 
         elif arr_command[0] == 'attend':
 
@@ -160,7 +54,7 @@ def commandLine():
                     print(f'\n {others}>>{info} Possíveis parâmetros: {param_1}{reset}')
                     commandLine()    
 
-                elif arr_command[1] in ['RAPH', 'MARC', 'ALEX', 'MAUR', '?']:
+                elif arr_command[1] in ['RAP', 'MAR', 'ALE', 'MAU', '?']:
                     
                     attendant = arr_command[1]
                             

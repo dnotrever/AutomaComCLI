@@ -12,7 +12,7 @@ def get_driver():
     driver.maximize_window()
     return driver
 
-def get_wait(driver, timeout=30):
+def get_wait(driver, timeout=60):
     wait = WebDriverWait(driver, timeout)
     return wait
 
@@ -25,3 +25,6 @@ def clickable(element):
 
 def located(element):
     return EC.presence_of_element_located(element)
+
+def all_located(element):
+    return EC.presence_of_all_elements_located(element)

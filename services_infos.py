@@ -2,7 +2,7 @@ def services_infos(op_code, date):
 
     import re
     import pandas as pd
-
+    
     from access_system import By, Keys, clickable, wait, actions, open_system
 
     open_system(1, op_code)
@@ -71,7 +71,7 @@ def services_infos(op_code, date):
             wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img'))).click()
 
             ## Get NAME
-            name = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[2]/dd/input'))).get_attribute("value")
+            name = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[6]/dd/input'))).get_attribute("value")
             
             ## Address
             wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/ul/li[2]/a'))).click()
@@ -105,15 +105,19 @@ def services_infos(op_code, date):
             ## Get PHONE
             phone = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[3]/dl[5]/dd/input'))).get_attribute("value")
             phone = phone if phone else 0
+            
+            try:
 
-            ## Login
-            wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/ul/li[8]'))).click()
+                ## Login
+                wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/ul/li[8]'))).click()
+                
+                ## Get LOGIN
+                login = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[11]/div'))).text
 
-            ## Get LOGIN
-            login = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[11]/div'))).text
+                ## Get BAND
+                band = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[6]/div'))).text
 
-            ## Get BAND
-            band = wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[6]/div'))).text
+            except: pass
 
             customers += [[name, condominium, block, apt, complement, district, phone, login, band, subject, description]]
 
