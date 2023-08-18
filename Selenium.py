@@ -8,11 +8,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 def get_driver():
     options = webdriver.ChromeOptions()
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    options.add_argument('--lang=pt-br')
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     return driver
 
-def get_wait(driver, timeout=60):
+def get_wait(driver, timeout=30):
     wait = WebDriverWait(driver, timeout)
     return wait
 

@@ -1,201 +1,146 @@
-import os, pytz, message_colors
-from datetime import date, datetime, timedelta
-from os import system
-system('mode con: cols=125 lines=25')
+import traceback, os
 
-historic = []
+from Selenium import get_driver
+from Systems import Systems
 
-def commandLine():
+driver = get_driver()
 
-    tz = pytz.timezone('America/Sao_Paulo')
-    sp_time = datetime.now(tz)
-    now = sp_time.strftime("%d/%m/%Y %H:%M:%S")
-    
-    others, success, error, info, reset = message_colors.MessageColors.values()
-    
-    def messageError(code, param=None):
-        messages = {
-            1: f'Parâmetro faltando {info}[{param}]{reset}',
-            2: 'Commando não reconhecido!',
-            3: 'Excesso de parâmetros!'
-        }
-        message = messages.get(code, 'Código de erro inválido.')
-        print(f'\n {others}>> {error}Erro: {message}{reset}')
-        return commandLine()
+Systems(driver).system_1_access()
 
-    command = input(f'\n {others}$~{reset} ')
-    
-    arr_command = command.split()
-    
-    if len(arr_command) > 0:
+os.system('cls')
+
+# os.system('mode con: cols=125 lines=25')
+
+messageColors = {
+    'others': '\033[1;34m', ## purple
+    'success': '\033[0;32m', ## green
+    'error': '\033[1;31m', ## red
+    'info': '\033[36m', ## blue
+    'detail': '\033[1;90m', ## gray
+    'reset': '\033[0;0m',
+}
+
+others, success, error, info, detail, reset = messageColors.values()
+
+parag = f'\n {others}$~{reset}  '
+
+def message(msg):
+
+    color = success if msg[0] == 'success' else error
+    print(parag + color + msg[1] + reset)
+
+def commandline():
+
+    option = input(parag).split(' ')
+
+    try:
+
+        ## Services
+        if option[0] == 'services':
+
+            from Services import Services
+            msg = Services(driver).services_infos()
+
+        ## Emergency
+        if option[0] == 'emerg':
+
+            register_id = option[1]
+            service = option[2]
+
+            from Emergency import Emergency
+            msg = Emergency(driver).register_verify('id', register_id, service)
+
+        ## Closing Services
+        if option[0] == 'close':
+
+            if option[1] == 'verify':
+
+                from Closing_Services import Closing_Services
+                msg = Closing_Services(driver).closing_verify()
+
+            if option[1] == 'execute':
+
+                from Closing_Services import Closing_Services
+                msg = Closing_Services(driver).closing_execute()
         
-        if arr_command[0] == '?':
-            print(f'\n {others}>>{info} Possíveis parâmetros: emerg | services | hist | clear | exit{reset}')
+        ## Scheduling Services
+        if option[0] == 'schedule':
+
+            if option[1] == 'verify':
+
+                driver.execute_script("window.open('');")
+                driver.switch_to.window(driver.window_handles[1])
+
+                from Systems import Systems
+                Systems(driver).system_2_access()
+
+                from Scheduling_Services import Scheduling_Services
+                msg = Scheduling_Services(driver).scheduling_verify()
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+            if option[1] == 'execute':
+                from Scheduling_Services import Scheduling_Services
+                msg = Scheduling_Services(driver).scheduling_execute()
+
+        ## Multiple
+        if option[0] == 'multiple':
+
+            from Multiple_Registers import Multiple_Registers
+            msg = Multiple_Registers(driver).multiple_verify()
+
+        ## Removals
+        if option[0] == 'removals':
+
+            from Removals import Removals
+            msg = Removals(driver).removals_verify()
+
+        ## Clear Connection
+        if option[0] == 'disc':
+
+            register_id = option[1]
+            from Clear_Connection import Clear_Connection
+            msg = Clear_Connection(driver).search_register('id', register_id)
+
+        ## Contract Activation
+        if option[0] == 'contract':
+
+            from Contract_Activation import Contract_Activation
+            msg = Contract_Activation(driver).contract_activation()
             
-        elif arr_command[0] == 'logins':
-            
-            pass
-                
-        elif arr_command[0] == 'complet':
-            
-            pass
-                
-        elif arr_command[0] == 'scheds':
-            
-            pass
-                
-        elif arr_command[0] == 'attend':
+        ## Attendances
+        if option[0] == 'transfer':
 
-            param_1 = 'código do atendente para transferir'
-            
-            if len(arr_command) > 1:
-                        
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: {param_1}{reset}')
-                    commandLine()    
+            driver.execute_script("window.open('');")
+            driver.switch_to.window(driver.window_handles[1])
 
-                elif arr_command[1] in ['RAP', 'MAR', 'ALE', 'MAU', '?']:
-                    
-                    attendant = arr_command[1]
-                            
-                    if len(arr_command) < 3:
+            from Systems import Systems
+            Systems(driver).system_2_access()
 
-                        try:
-                            import transfer_attendance as Attend
-                            msg = Attend.transfer_attendances('0', attendant)
-                        
-                        except Exception as err:
-                            print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                            commandLine()
-                        
-                    else: messageError(3)
-                            
-                else: messageError(2)
-                        
-            else: messageError(1, param_1)
-        
-        elif arr_command[0] == 'emerg':
+            from Attendances import Attendances
+            code = option[1] if len(option) > 1 else '0'
+            msg = Attendances(driver).transfer(code)
 
-            param_1 = 't (visita técnica) | r (retirada de equipamentos)'
-            param_2 = 'id do cliente'
-            param_3 = 'código do operador'
-            
-            if len(arr_command) > 1:
-                    
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: {param_1}{reset}')
-                    commandLine()
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
 
-                elif arr_command[1] in ['t', 'r', '?']:
-                    
-                    option = arr_command[1]
-                                    
-                    if len(arr_command) > 2:
-                                
-                        if arr_command[2] == '?':
-                            print(f'\n {others}>>{info} Possíveis parâmetros: {param_2}{reset}')
-                            commandLine()
-                                    
-                        elif arr_command[2] != '?':
-                            
-                            customer_id = arr_command[2]
-                                    
-                            if len(arr_command) > 3:
-                                
-                                if arr_command[3] == '?':
-                                    print(f'\n {others}>>{info} Possíveis parâmetros: {param_3}{reset}')
-                                    commandLine()
-                                
-                                elif arr_command[3] in ['0', '1', '2', '3', '4', '?']:
-                                    
-                                    op_code = arr_command[3]
-                                    
-                                    if len(arr_command) < 5:
-                                        
-                                        try:
-                                            import customer_infos as Infos
-                                            Infos.customer_infos(op_code, customer_id)
-                                            
-                                            import emergency
-                                            msg = emergency.customer_infos(option)
-                                            print(f'\n {others}>> {success}{msg}{reset}')
-
-                                            historic.append(''.join(f'{now} - {msg}'))
-                                        
-                                        except Exception as err:
-                                            print(f'\n {others}>>{error} Ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                                            commandLine()
-                                        
-                                    else: messageError(3)
-                                
-                                else: messageError(2)
-                                
-                            else: messageError(1, param_3)
-                                    
-                        else: messageError(2)
-                                
-                    else: messageError(1, param_2)
-                                    
-                else: messageError(2)
-
-            else: messageError(1, param_1)
-        
-        elif arr_command[0] == 'services':
-
-            param_1 = 'código do operador'
-            
-            if len(arr_command) > 1:
-                                
-                if arr_command[1] == '?':
-                    print(f'\n {others}>>{info} Possíveis parâmetros: {param_1}{reset}')
-                    commandLine()
-
-                elif arr_command[1] != '?':
-                    
-                    op_code = arr_command[1]
-
-                    if len(arr_command) < 3:
-                            
-                        try:
-                            tomorrow = (date.today() + timedelta(days=1)).strftime('%d/%m/%Y')
-
-                            import services_infos as Services
-                            msg_1 = Services.services_infos(op_code, tomorrow)
-                            
-                            import services
-                            msg_2 = services.services_infos()
-
-                            print(f'\n {others}>> {success}{msg_2} {msg_1}{reset}')
-
-                            historic.append(''.join(f'{now} - {msg_2} {msg_1}'))
-                        
-                        except Exception as err:
-                            print(f'\n {others}>>{error} ocorreu um erro...{reset}\t{info}\n    {err}{reset}')
-                            commandLine()
-                                
-                    else: messageError(2)
-                                      
-                else: messageError(2)
-
-            else: messageError(1, param_1)
-
-        elif arr_command[0] == 'hist':
-            
-            if historic:
-                print('')
-                for log in historic:
-                    print(f'     {info}{log}{reset}')
-            else:
-                print(f'\n {others}>> {info}Não há histórico para exibir.{reset}')
-            
-        elif arr_command[0] == 'clear':
+        ## Terminal Clean
+        if option[0] == 'clear':
             os.system('cls')
-            commandLine()
-            
-        elif arr_command[0] == 'exit': return
-        
-        else: messageError(2)
-        
-    commandLine()
 
-commandLine()
+        try: message(msg)
+        except: pass
+
+    except Exception as err:
+        print(f'\n{error}An error has occurred:\n\n{detail}{traceback.format_exc()}{reset}')
+    
+    finally:
+        commandline()
+
+commandline()
+
+
+# XPATH Customer Infos
+# OS (Register)  -->   /html/body/form[3]/ ...
+# Customers      -->   /html/body/form[2]/ ...

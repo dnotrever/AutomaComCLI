@@ -1,58 +1,102 @@
-# import dataframes
-import date_config as Date
-import format_address as Address
-import format_phone as Phone
+import time, re
+from datetime import datetime
 import pandas as pd
 
-def generate_emergency(option, name, condominium, block, apt, complement, phone, login, band, current_date):
+from Selenium import By, Keys
+from Selenium import get_wait, get_actions, clickable, located, all_located
 
-    emergency = open(f'../chamado__{name}.txt', 'w')
+from Search_Register import Search_Register
+from Register_Infos import Register_Infos
 
-    if option == 't':
-        emergency.write('*Visita Técnica - ')
-    elif option == 'r':
-        emergency.write('*Retirada de Equipamentos - ')
+class Emergency:
 
-    address = Address.format_address(block, apt, condominium, complement)
-    phone_format = Phone.format_phone(phone)
+    def __init__(self, driver):
 
-    emergency.write(f'{current_date}*\n{name}\n{address}\n{phone_format}\n')
+        self.driver = driver
+        self.wait = get_wait(self.driver)
+        self.actions = get_actions(self.driver)
 
-    if option == 't':
-        emergency.write('Cliente sem conexão. Los piscando vermelho e Pon pagada na Onu. \n{} - {}\n'.format(login, band))
-    elif option == 'r':
-        emergency.write('Retirar ')
+        self.current_date = datetime.now()
 
-    emergency.close()
+    def format_phone(self, phone):
+        phone = ''.join(re.findall('[0-9]+', phone))
+        if (len(phone) > 10):
+            return f'({phone[:2]}) {phone[2:7]}-{phone[7:11]}'
+        elif (len(phone) > 9):
+            return f'({phone[:2]}) {phone[2:6]}-{phone[6:10]}'
+        else:
+            return phone
 
-def customer_infos(option):
+    def generate_emergency(self, option, name, condominium, block, apt, complement, phone, login, band, current_date):
 
-    condominiums = pd.read_excel('sheets/Condominiums.xlsx', sheet_name='Condomínios')
-    customer_infos = pd.read_excel("sheets/Customer_Infos.xlsx")
+        emergency = open(f'../chamado__{name}.txt', 'w')
 
-    infos = pd.merge(customer_infos, condominiums, on='Cond_Cod')
-    infos.drop('Cond_Cod', axis=1, inplace=True)
+        subject = 'Visita Técnica' if option == 't' else 'Retirada de Equipamentos'
+        phone = self.format_phone(phone)
 
-    for _, row in infos.iterrows():
+        if option == 't':
+            description = 'Cliente sem conexão. Los piscando vermelho e Pon apagada na Onu.' + '\n' + login + ' - ' + band
+        else:
+            description = 'Retirar n'
 
-        name = row['Customer']
-        condominium = row['Condominium']
-        block = str(row['Block'])
-        apt = str(row['Apt'])
-        complement = str(row['Complement'])
-        phone = str(row['Phone'])
-        login = row['Login']
-        band = row['Band'].split('_')[0]
-        current_date = f'{Date.current_day}/{Date.current_month}'
+        emergency.write(f'*{subject} - {current_date}*\n{name}\n{condominium} - Bloco {block.zfill(2)} - Apto {apt.zfill(2)}\n{phone}\n{description}')
 
-        generate_emergency(option, name, condominium, block, apt, complement, phone, login, band, current_date)
-        
-        subject = 'conexão' if option == 't' else 'retirada'
+        emergency.close()
 
-        customer_name = name
+    def register_infos(self, df_register, option):
 
-        break
+        condominium_list = pd.read_excel('sheets/Condominiums.xlsx', sheet_name='Condomínios')
 
-    return f'Chamado de {subject} gerado para {customer_name}'
+        df_register['Cond_Code'] = df_register['Cond_Code'].astype(str)
+        condominium_list['Cond_Code'] = condominium_list['Cond_Code'].astype(str)
 
-# print(generate_emergency('c'))
+        infos = pd.merge(df_register, condominium_list, on='Cond_Code')
+        infos.drop('Cond_Code', axis=1, inplace=True)
+
+        for _, row in infos.iterrows():
+
+            name = row['Register_Name']
+            condominium = row['Condominium']
+            block = str(row['Block'])
+            apt = str(row['Apt'])
+            complement = str(row['Complement'])
+            phone = str(row['Phone'])
+            login = row['Login']
+            band = row['Band'].split('_')[0]
+
+            current_day = self.current_date.day
+            current_month = self.current_date.month
+
+            current_date = str(current_day).zfill(2) + '/' + str(current_month).zfill(2)
+
+            self.generate_emergency(option, name, condominium, block, apt, complement, phone, login, band, current_date)
+
+            register_name = name
+
+            break
+
+        return register_name
+
+    def register_verify(self, type, register_id, service):
+
+        ## Search
+        registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
+        self.driver.execute_script('arguments[0].click();', registers)
+
+        Search_Register.open_register_search(self, type, register_id)
+
+        data = [Register_Infos.get_register_infos(self, '2')]
+
+        df_register = pd.DataFrame(data, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band'])
+
+        time.sleep(1)
+        for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+
+        register_name = self.register_infos(df_register, service)
+
+        time.sleep(2)
+        for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+
+        return ['success', f'Emergency service generated for {register_name}.']
+
+

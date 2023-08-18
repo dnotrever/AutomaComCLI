@@ -1,108 +1,45 @@
-def contract_activation(op, customer_id, customer_name, test=False, secs=1.0):
+import time
 
-    import time
-    from selenium import webdriver
-    from selenium.webdriver.common.keys import Keys
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
+from Selenium import By, Keys
+from Selenium import get_wait, get_actions, clickable, located, all_located
 
-    if not test: import access_system as OpenAccess
-    else: import access_system as OpenAccess
+from Clear_Connection import Clear_Connection
 
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+class Contract_Activation:
 
-    driver = webdriver.Chrome(options=options)
+    def __init__(self, driver):
 
-    backslash = "\\"
+        self.driver = driver
+        self.wait = get_wait(self.driver)
+        self.actions = get_actions(self.driver)
 
-    OpenAccess.I_url_access(driver, op)
+    def contract_activation(self):
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        try:
 
-    ## Abrir Cadastro
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="Cadastros"]'))).click()
+            ## Contract Tab
+            contract_tab = self.wait.until(clickable((By.XPATH, '/html/body/form/div[3]/ul/li[7]/a')))
+            self.driver.execute_script('arguments[0].click();', contract_tab)
 
-    ## Abrir Cliente
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="Clientes"]'))).click()
+            ## Edit Contract
+            self.wait.until(clickable((By.XPATH, '/html/body/form/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
 
-    ## Filtro
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div/div[3]/div/span[1]'))).click()
+            ## Active
+            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[2]/button[5]'))).click()
 
-    ## Selecionar ID
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div/div[3]/nav/ul/li[2]'))).click()
+            time.sleep(4)
 
-    ## Procurar Cliente
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, 'q'))).send_keys(customer_id)
-    time.sleep(secs)
-    driver.find_element(By.NAME, 'q').send_keys(Keys.ENTER)
+            ## Save
+            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[2]/button[2]'))).click()
 
-    # customer_name = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div/div[6]/table/tbody/tr/td[4]/div'))).text
+            time.sleep(2)
 
-    ## Editar
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, 'editar'))).click()
+        except: pass
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-    ## Contrato
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[7]/a'))).click()
+        Clear_Connection.clear_register_connection(self)
 
-    ## Editar
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
+        return ['success', 'Successfully contract actived.']
 
-    ## Ativar
-    time.sleep(3)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[3]/div[2]/button[5]'))).click()
 
-    ## Salvar
-    time.sleep(2)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[3]/div[2]/button[2]'))).click()
-
-    ## Fechar
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[3]/div[1]/div[3]/a[4]'))).click()
-
-    # # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    ## Login
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[8]'))).click()
-
-    ## Limpar MAC
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[3]/div[8]/dl/div/div/div[2]/div[1]/button[10]'))).click()
-    time.sleep(secs*2)
-    WebDriverWait(driver, 10).until(EC.alert_is_present())
-    driver.switch_to.alert.accept()
-
-    ## Desconectar Login
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[3]/div[8]/dl/div/div/div[2]/div[1]/button[11]'))).click()
-    time.sleep(secs*2)
-    WebDriverWait(driver, 10).until(EC.alert_is_present())
-    driver.switch_to.alert.accept()
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    ## Fechar 1
-    time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/form[2]/div[1]/div[3]/a[4]'))).click()
-
-    ## Logout
-    time.sleep(secs)
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/div/i').click()
-
-    driver.close()
-
-    return f'{customer_name} - contrato ativado.'
-
-# print(contract_activation('0', '8950', 'Fulano', True))
