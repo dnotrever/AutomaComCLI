@@ -27,8 +27,9 @@ class Search_Register:
             ## Insert Input Name
             self.wait.until(located((By.CSS_SELECTOR, 'input[name="q"]'))).send_keys(register_label)
 
-        time.sleep(2)
-        get_actions(self.driver).send_keys(Keys.ENTER).perform()
+        time.sleep(1)
+
+        for _ in range(3): get_actions(self.driver).send_keys(Keys.ENTER).perform()
 
         time.sleep(3)
 
@@ -56,5 +57,4 @@ class Search_Register:
         self.driver.execute_script('arguments[0].click();', edit_btn)
 
         time.sleep(1)
-
 

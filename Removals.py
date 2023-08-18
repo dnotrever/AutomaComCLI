@@ -5,7 +5,7 @@ from Selenium import By, Keys
 from Selenium import get_wait, get_actions, clickable, located, all_located
 
 from Search_Register import Search_Register as SEARCH
-from Datetime_Now import Datetime_Now as NOW
+from Set_DateTime import Datetime_Now as NOW
 
 class Removals:
 

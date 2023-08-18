@@ -165,8 +165,7 @@ class Scheduling_Services:
                 self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[10]/a'))).click()
 
                 ## New Service
-                # self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[10]/dl/div/div/div[2]/div[1]/button[1]'))).click(
-                self.wait.until(clickable((By.CSS_SELECTOR, r'#\31 3 > dl > div > div > div.tDiv.bg2 > div.tDiv2 > button:nth-child(1)'))).click()
+                self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[10]/dl/div/div/div[3]/div[1]/button[1]'))).click()
 
                 ## Subject
                 self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[10]/dd/input'))).send_keys(subject)

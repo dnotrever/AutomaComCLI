@@ -18,19 +18,21 @@ class Contract_Activation:
         try:
 
             ## Contract Tab
-            contract_tab = self.wait.until(clickable((By.XPATH, '/html/body/form/div[3]/ul/li[7]/a')))
+            contract_tab = self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[7]/a')))
             self.driver.execute_script('arguments[0].click();', contract_tab)
 
             ## Edit Contract
-            self.wait.until(clickable((By.XPATH, '/html/body/form/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
+            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
 
             ## Active
-            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[2]/button[5]'))).click()
+            self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[5]'))).click()
 
             time.sleep(4)
 
             ## Save
-            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[2]/button[2]'))).click()
+            self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[2]'))).click()
+
+            '/html/body/form[3]/div[2]/button[2]'
 
             time.sleep(2)
 

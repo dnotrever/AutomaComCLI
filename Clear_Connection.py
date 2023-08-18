@@ -35,11 +35,7 @@ class Clear_Connection:
         time.sleep(1)
         get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-        return ['success', 'Successfully register connection cleaned.']
-
     def search_register(self, type, register_id):
-
-        for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
         ## Search
         registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
@@ -47,10 +43,10 @@ class Clear_Connection:
 
         Search_Register.open_register_search(self, type, register_id)
 
-        message = self.clear_register_connection()
+        self.clear_register_connection()
 
         time.sleep(1)
-        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+        for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-        return message
+        return ['success', 'Successfully register connection cleaned.']
 

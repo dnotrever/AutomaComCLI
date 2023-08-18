@@ -96,6 +96,13 @@ def commandline():
             from Removals import Removals
             msg = Removals(driver).removals_verify()
 
+        ## Unlock Connection
+        if option[0] == 'unlock':
+
+            id_list = option[1].split('-')
+            from Unlock_Connection import Unlock_Connection
+            msg = Unlock_Connection(driver).search_register('id', id_list)
+
         ## Clear Connection
         if option[0] == 'disc':
 
