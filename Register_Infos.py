@@ -60,4 +60,3 @@ class Register_Infos:
 
         return [name, condominium, block, apt, complement, district, phone, login, band]
 
-

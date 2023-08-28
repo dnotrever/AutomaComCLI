@@ -1,7 +1,7 @@
-import time
+import time, traceback
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, clickable, located
 
 from Search_Register import Search_Register as SEARCH
 from Set_DateTime import Set_DateTime as DATETIME
@@ -15,9 +15,12 @@ class Unlock_Connection:
         self.wait = get_wait(self.driver)
         self.actions = get_actions(self.driver)
 
-    def unlock_register_connection(self, register_id):
+        self.detail = '\033[90m'
 
-        print('  ')
+    def unlock_register_connection(self):
+
+        ## Name
+        name = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/input'))).get_attribute('value')
 
         ## Contract Tab
         self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[7]/a'))).click()
@@ -25,7 +28,7 @@ class Unlock_Connection:
         ## Status
         status = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[5]/table/tbody/tr[1]/td[4]/div/span')))
 
-        if 'Bloqueio Automático' in status.text:
+        if 'Bloqueio Automático' in status.text or 'Financeiro em atraso' in status.text:
 
             ## Actions
             self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/nav[1]/div'))).click()
@@ -36,11 +39,18 @@ class Unlock_Connection:
             alert = self.driver.switch_to.alert
             alert.accept()
 
-            time.sleep(2)
+            time.sleep(6)
 
-            message = self.wait.until(located((By.XPATH, '/html/body/div[9]/div[2]/div[3]/div[1]')))
+            ## Refresh
+            refresh_btn = self.wait.until(clickable((By.CSS_SELECTOR, 'i[title="Atualizar"]')))
+            self.driver.execute_script('arguments[0].click();', refresh_btn)
 
-            if 'Erro' in message.text:
+            time.sleep(1)
+
+            # message = self.wait.until(located((By.CSS_SELECTOR, '#ixc_notificacao > div > div:nth-child(3) > div:nth-child(1)')))
+
+            # if 'Erro' in message.text:
+            if 'Bloqueio Automático' in status.text or 'Financeiro em atraso' in status.text:
 
                 ## Edit Tab
                 self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
@@ -56,10 +66,12 @@ class Unlock_Connection:
 
                 ## 
                 self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[3]/dd/input'))).clear()
+                for _ in range(2): self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[3]/dd/input'))).click()
                 self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[3]/dd/input'))).send_keys(new_date)
 
                 ## 
                 self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[5]/dd/input'))).clear()
+                for _ in range(2): self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[5]/dd/input'))).click()
                 self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[5]/dl[5]/dd/input'))).send_keys(new_date)
 
                 time.sleep(1)
@@ -80,30 +92,38 @@ class Unlock_Connection:
 
             CLEAR.clear_register_connection(self)
 
-            print('  ' + register_id + ' - Unlocked!')
+            print(self.detail + '     ' + name + ' - Unlocked!')
 
         else:
 
-            print('  ' + register_id + ' - Register not locked!')
+            print(self.detail + '     ' + name + ' - Register not locked!')
 
     def search_register(self, type, id_list):
+            
+        try:
 
-        ## Search
-        registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
-        self.driver.execute_script('arguments[0].click();', registers)
+            ## Search
+            registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
+            self.driver.execute_script('arguments[0].click();', registers)
 
-        for register_id in id_list:
+            print('\n     Unlocking...')
 
-            SEARCH.open_register_search(self, type, register_id)
+            for register_id in id_list:
 
-            self.unlock_register_connection(register_id)
+                SEARCH.open_register_search(self, type, register_id)
 
-            ## Clear Name
-            clear_name = self.wait.until(located((By.CSS_SELECTOR, r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')))
-            self.driver.execute_script('arguments[0].click();', clear_name)
+                self.unlock_register_connection()
 
-        time.sleep(1)
-        for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                ## Clear Name
+                clear_name = self.wait.until(located((By.CSS_SELECTOR, r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')))
+                self.driver.execute_script('arguments[0].click();', clear_name)
 
-        return ['success', 'Successfully registers connection unlocked.']
+            time.sleep(1)
+            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+
+            return ['success', ' Successfully registers connection unlocked.']
+    
+        except:
+
+            return ['error', traceback.format_exc()]
 

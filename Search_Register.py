@@ -1,7 +1,7 @@
-import time, re
+import time
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, located, all_located
 
 class Search_Register:
 
@@ -27,11 +27,11 @@ class Search_Register:
             ## Insert Input Name
             self.wait.until(located((By.CSS_SELECTOR, 'input[name="q"]'))).send_keys(register_label)
 
+        for _ in range(2):
+            time.sleep(1)
+            get_actions(self.driver).send_keys(Keys.ENTER).perform()
+
         time.sleep(1)
-
-        for _ in range(3): get_actions(self.driver).send_keys(Keys.ENTER).perform()
-
-        time.sleep(3)
 
         if type == 'name':
 

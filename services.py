@@ -1,4 +1,4 @@
-import time, re
+import time, re, traceback
 from datetime import datetime, timedelta
 import pandas as pd
 
@@ -17,6 +17,7 @@ class Services:
         self.actions = get_actions(self.driver)
 
         self.tomorrow_date = datetime.now() + timedelta(days=1)
+        self.info = '\033[36m'
 
     def format_phone(self, phone):
         phone = ''.join(re.findall('[0-9]+', phone))
@@ -89,64 +90,69 @@ class Services:
         return services_count
 
     def services_infos(self):
+            
+        try:
 
-        pagination = Services_Order.open_services(self, self.tomorrow_date)
+            pagination = Services_Order.open_services(self, self.tomorrow_date)
 
-        service_index = 0
+            service_index = 0
 
-        registers = []
+            registers = []
 
-        for _ in range(int(pagination[4])):
+            for _ in range(int(pagination[4])):
+
+                time.sleep(1)
+
+                ## Registers List
+                services = self.wait.until(all_located((By.CSS_SELECTOR, 'tr[data-campoautoincrement="id"]')))
+
+                service_index += 1
+
+                service = services[service_index-1]
+
+                ## Get Subject
+                subject_parent = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="su_oss_assunto.assunto"]')))
+                subject = get_wait(subject_parent).until(located((By.TAG_NAME, 'div')))
+
+                if subject.text != 'Instalação':
+
+                    subject = subject.text
+
+                    get_actions(self.driver).double_click(service).perform()
+
+                    time.sleep(1)
+
+                    ## Get Description
+                    description = self.wait.until(located((By.ID, 'mensagem'))).get_attribute('value')
+
+                    ## Register_Infos Register
+                    self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img'))).click()
+
+                    data = Register_Infos(self.driver).get_register_infos('3')
+
+                    data.append(subject)
+                    data.append(description)
+
+                    registers.append(data)
+
+                    for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+
+                if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
+                    next_btn = self.wait.until(located((By.CSS_SELECTOR, 'i[title="Próximo"]')))
+                    self.driver.execute_script('arguments[0].click();', next_btn)
+                    service_index = 0
+                    time.sleep(1)
+
+            df_services = pd.DataFrame(registers, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band', 'Subject', 'Description'])
 
             time.sleep(1)
+            get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-            ## Registers List
-            services = self.wait.until(all_located((By.CSS_SELECTOR, 'tr[data-campoautoincrement="id"]')))
+            services_count = self.services_list(df_services)
 
-            service_index += 1
+            return ['success', ' Services listed: ' + self.info + str(services_count)]
+    
+        except:
 
-            service = services[service_index-1]
-
-            ## Get Subject
-            subject_parent = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="su_oss_assunto.assunto"]')))
-            subject = get_wait(subject_parent).until(located((By.TAG_NAME, 'div')))
-
-            if subject.text != 'Instalação':
-
-                subject = subject.text
-
-                get_actions(self.driver).double_click(service).perform()
-
-                time.sleep(1)
-
-                ## Get Description
-                description = self.wait.until(located((By.ID, 'mensagem'))).get_attribute('value')
-
-                ## Register_Infos Register
-                self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img'))).click()
-
-                data = Register_Infos(self.driver).get_register_infos('3')
-
-                data.append(subject)
-                data.append(description)
-
-                registers.append(data)
-
-                for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
-
-            if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
-                next_btn = self.wait.until(located((By.CSS_SELECTOR, 'i[title="Próximo"]')))
-                self.driver.execute_script('arguments[0].click();', next_btn)
-                service_index = 0
-                time.sleep(1)
-
-        df_services = pd.DataFrame(registers, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band', 'Subject', 'Description'])
-
-        time.sleep(1)
-        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
-
-        services_count = self.services_list(df_services)
-
-        return ['success', f'{services_count} services listed.']
-
+            return ['error', traceback.format_exc()]
 

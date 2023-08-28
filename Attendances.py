@@ -1,8 +1,5 @@
-import pandas as pd
-import time, re
-from datetime import datetime, timedelta
-
-from Selenium import By, Keys
+import time
+from Selenium import By
 from Selenium import get_wait, get_actions, clickable, located, all_located
 
 class Attendances:
@@ -33,7 +30,7 @@ class Attendances:
 
             time.sleep(1)
 
-            customer.click()
+            self.driver.execute_script('arguments[0].click();', customer)
 
             order = customer.get_attribute('style').split('-')[1][:2]
 
@@ -79,4 +76,41 @@ class Attendances:
                 ## OK Button
                 self.wait.until(clickable((By.CLASS_NAME, 'btn-blue'))).click()
 
+    def message(self, main_tag, counter_tag, finish, text):
+
+        text = text.replace(' + ', '\n') + '\n'
+
+        ## Attedances
+        self.wait.until(clickable((By.XPATH, '/html/body/div/div[4]/div[5]/i'))).click()
+
+        time.sleep(2)
+
+        attendances = self.wait.until(all_located((By.CLASS_NAME, 'chat')))
+
+        count = 0
+
+        for customer in attendances:
+
+            time.sleep(1)
+
+            attendance_tags = customer.text.split('\n')[2]
+
+            if main_tag in attendance_tags and counter_tag not in attendance_tags:
+
+                count += 1
+
+                self.driver.execute_script('arguments[0].click();', customer)
+
+                ## Message Box
+                self.wait.until(clickable((By.XPATH, '/html/body/div/div[6]/div[1]/div[3]/div[1]/div[2]'))).send_keys(text)
+
+                if finish:
+
+                   finish_btn = self.wait.until(clickable((By.XPATH, '/html/body/div/div[6]/div[2]/div[21]/button[1]')))
+                   self.driver.execute_script('arguments[0].click();', finish_btn)
+
+                   ok_btn = self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div[2]/div/div/div/div/div/div/div/div[4]/button[2]')))
+                   self.driver.execute_script('arguments[0].click();', ok_btn)
+
+        return ['success', f'Message sent to {count} customers.']
 

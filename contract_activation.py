@@ -1,9 +1,9 @@
-import time
+import time, traceback
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, clickable, located
 
-from Clear_Connection import Clear_Connection
+from Clear_Connection import Clear_Connection as CLEAR
 
 class Contract_Activation:
 
@@ -13,35 +13,55 @@ class Contract_Activation:
         self.wait = get_wait(self.driver)
         self.actions = get_actions(self.driver)
 
+        self.detail = '\033[90m'
+
+    def traceback_formatted(self, traceback):
+        index = traceback.find('Stacktrace:')
+        return traceback[:index] if index != -1 else traceback
+
     def contract_activation(self):
 
         try:
 
+            ## Register
+            register = self.wait.until(located((By.CSS_SELECTOR, 'input[name="razao"]'))).get_attribute('value')
+
             ## Contract Tab
-            contract_tab = self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[7]/a')))
+            contract_tab = self.wait.until(located((By.CSS_SELECTOR, 'a[rel="7"]')))
             self.driver.execute_script('arguments[0].click();', contract_tab)
 
-            ## Edit Contract
-            self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/button[2]'))).click()
+            ## Status
+            status = self.wait.until(located((By.CSS_SELECTOR, 'td[abbr="cliente_contrato.status_internet"]')))
 
-            ## Active
-            self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[5]'))).click()
+            if 'Desativado' in status.text:
 
-            time.sleep(4)
+                time.sleep(1)
 
-            ## Save
-            self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[2]'))).click()
+                ## Edit Contract
+                edit_contract = self.wait.until(located((By.CSS_SELECTOR, 'button[name="editar"]')))
+                self.driver.execute_script('arguments[0].click();', edit_contract)
 
-            '/html/body/form[3]/div[2]/button[2]'
+                time.sleep(1)
 
-            time.sleep(2)
+                ## Active
+                active_btn = self.wait.until(clickable((By.CSS_SELECTOR, 'button[id="ativar_outro"]')))
+                self.driver.execute_script('arguments[0].click();', active_btn)
 
-        except: pass
+                time.sleep(4)
 
-        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                ## Save
+                save_btn = self.wait.until(clickable((By.CSS_SELECTOR, 'button[type="submit"]')))
+                self.driver.execute_script('arguments[0].click();', save_btn)
 
-        Clear_Connection.clear_register_connection(self)
+                time.sleep(2)
 
-        return ['success', 'Successfully contract actived.']
+                get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                
+            CLEAR.clear_register_connection(self)
 
+            return ['success', ' Successfully contract actived! ' + self.detail + '[ ' + register + ' ]']
+
+        except:
+            
+            return ['error', traceback.format_exc()]
 

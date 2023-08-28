@@ -1,12 +1,12 @@
-import time, re
+import time, re, traceback
 from datetime import datetime
 import pandas as pd
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, located
 
-from Search_Register import Search_Register
-from Register_Infos import Register_Infos
+from Search_Register import Search_Register as SEARCH
+from Register_Infos import Register_Infos as INFOS
 
 class Emergency:
 
@@ -17,8 +17,10 @@ class Emergency:
         self.actions = get_actions(self.driver)
 
         self.current_date = datetime.now()
+        self.info = '\033[36m'
 
     def format_phone(self, phone):
+
         phone = ''.join(re.findall('[0-9]+', phone))
         if (len(phone) > 10):
             return f'({phone[:2]}) {phone[2:7]}-{phone[7:11]}'
@@ -78,25 +80,30 @@ class Emergency:
         return register_name
 
     def register_verify(self, type, register_id, service):
+    
+        try:
 
-        ## Search
-        registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
-        self.driver.execute_script('arguments[0].click();', registers)
+            ## Search
+            registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
+            self.driver.execute_script('arguments[0].click();', registers)
 
-        Search_Register.open_register_search(self, type, register_id)
+            SEARCH.open_register_search(self, type, register_id)
 
-        data = [Register_Infos.get_register_infos(self, '2')]
+            data = [INFOS.get_register_infos(self, '2')]
 
-        df_register = pd.DataFrame(data, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band'])
+            df_register = pd.DataFrame(data, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band'])
 
-        time.sleep(1)
-        for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            time.sleep(1)
+            for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-        register_name = self.register_infos(df_register, service)
+            register = self.register_infos(df_register, service)
 
-        time.sleep(2)
-        for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            time.sleep(1)
+            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-        return ['success', f'Emergency service generated for {register_name}.']
+            return ['success', ' Emergency service generated for: ' + self.info + register]
+    
+        except:
 
+            return ['error', traceback.format_exc()]
 

@@ -1,9 +1,8 @@
-import time, re
-from datetime import datetime
+import time, re, traceback
 import pandas as pd
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, clickable, located
 
 from Search_Register import Search_Register
 from Register_Infos import Register_Infos
@@ -29,66 +28,71 @@ class Multiple_Registers:
 
         # phone = self.format_phone(phone)
 
-        multiple_list.write(f'{name}\n{condominium} - {band}\n\n')
+        # multiple_list.write(f'{name}\n{condominium} - {band}\n\n')
+        multiple_list.write(f'{name}\n{condominium} - Bloco {block} - Apto {apt}\n\n')
 
     def multiple_infos(self, df_registers):
-        
-        multiple_list = open('../Registers_Infos.txt', 'w', encoding='utf-8')
 
+        multiple_list = open('../Register_Infos.txt', 'a', encoding='utf-8')
+        
         condominium_list = pd.read_excel('sheets/Condominiums.xlsx', sheet_name='Condomínios')
 
         df_registers['Cond_Code'] = df_registers['Cond_Code'].astype(str)
+
         condominium_list['Cond_Code'] = condominium_list['Cond_Code'].astype(str)
 
         multiple_infos = pd.merge(df_registers, condominium_list, on='Cond_Code')
         multiple_infos.drop('Cond_Code', axis=1, inplace=True)
 
-        for _, row in multiple_infos.iterrows():
+        name = multiple_infos['Register_Name'][0]
+        condominium = multiple_infos['Condominium'][0]
+        block = str(multiple_infos['Block'][0])
+        apt = str(multiple_infos['Apt'][0])
+        phone = str(multiple_infos['Phone'][0])
+        login = multiple_infos['Login'][0]
+        band = multiple_infos['Band'][0].replace('_', ' - ')
+        complement = str(multiple_infos['Complement'][0])
+        district = multiple_infos['District'][0]
 
-            name = row['Register_Name']
-            condominium = row['Condominium']
-            block = str(row['Block'])
-            apt = str(row['Apt'])
-            phone = str(row['Phone'])
-            login = row['Login']
-            band = row['Band'].replace('_', ' - ')
-            complement = str(row['Complement'])
-            district = row['District']
-
-            self.gerenate_infos(name, condominium, block, apt, phone, login, band, complement, district, multiple_list)
+        self.gerenate_infos(name, condominium, block, apt, phone, login, band, complement, district, multiple_list)
         
         multiple_list.close()
 
     def multiple_verify(self):
 
-        ## Search
-        registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
-        self.driver.execute_script('arguments[0].click();', registers)
+        try:
 
-        registers_list = open('sheets/Multiple_List.txt', 'r', encoding='utf-8')
-        
-        registers = []
+            ## Search
+            registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
+            self.driver.execute_script('arguments[0].click();', registers)
 
-        for register in registers_list:
+            registers_list = open('sheets/Multiple_List.txt', 'r', encoding='utf-8')
+            
+            registers = []
 
-            Search_Register.open_register_search(self, 'name', register)
+            for register in registers_list:
 
-            data = Register_Infos(self.driver).get_register_infos('2')
+                df_registers = pd.DataFrame(columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band'])
 
-            registers.append(data)
+                Search_Register.open_register_search(self, 'name', register)
 
-            time.sleep(1)
+                data = Register_Infos(self.driver).get_register_infos('2')
+
+                time.sleep(1)
+                get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+
+                ## Clear Name
+                self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[3]/div/div[1]/span/i'))).click()
+                
+                df_registers.loc[len(df_registers)] = data
+
+                self.multiple_infos(df_registers)
+
             get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
-            ## Clear Name
-            self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[3]/div/div[1]/span/i'))).click()
+            return ['success', ' Successfully multiple registers infos listed.']
+        
+        except:
             
-        df_registers = pd.DataFrame(registers, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band'])
-
-        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
-
-        self.multiple_infos(df_registers)
-
-        return ['success', 'Successfully multiple registers infos listed.']
-
+            return ['error', traceback.format_exc()]
 

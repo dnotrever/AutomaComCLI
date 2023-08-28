@@ -1,7 +1,8 @@
-import traceback, os
+import os
 
 from Selenium import get_driver
 from Systems import Systems
+from Set_DateTime import Set_DateTime as DATETIME
 
 driver = get_driver()
 
@@ -11,13 +12,15 @@ os.system('cls')
 
 # os.system('mode con: cols=125 lines=25')
 
+historic = []
+
 messageColors = {
     'others': '\033[1;34m', ## purple
-    'success': '\033[0;32m', ## green
-    'error': '\033[1;31m', ## red
+    'success': '\033[32m', ## green
+    'error': '\033[31m', ## red
     'info': '\033[36m', ## blue
-    'detail': '\033[1;90m', ## gray
-    'reset': '\033[0;0m',
+    'detail': '\033[90m', ## gray
+    'reset': '\033[0m',
 }
 
 others, success, error, info, detail, reset = messageColors.values()
@@ -26,98 +29,49 @@ parag = f'\n {others}$~{reset}  '
 
 def message(msg):
 
-    color = success if msg[0] == 'success' else error
-    print(parag + color + msg[1] + reset)
+    if msg[0] == 'success':
+        print(parag + detail + DATETIME.now_format() + success + msg[1] + reset)
+
+    if msg[0] == 'error':
+        print('\n' + error + 'An error has occurred:')
+        print('\n' + detail + msg[1] + reset)
 
 def commandline():
 
     option = input(parag).split(' ')
 
-    try:
+    ## Services
+    if option[0] == 'services':
 
-        ## Services
-        if option[0] == 'services':
+        from Services import Services
+        msg = Services(driver).services_infos()
 
-            from Services import Services
-            msg = Services(driver).services_infos()
+    ## Emergency
+    if option[0] == 'emerg':
 
-        ## Emergency
-        if option[0] == 'emerg':
+        register_id = option[1]
+        service = option[2]
 
-            register_id = option[1]
-            service = option[2]
+        from Emergency import Emergency
+        msg = Emergency(driver).register_verify('id', register_id, service)
 
-            from Emergency import Emergency
-            msg = Emergency(driver).register_verify('id', register_id, service)
+    ## Closing Services
+    if option[0] == 'close':
 
-        ## Closing Services
-        if option[0] == 'close':
+        if option[1] == 'verify':
 
-            if option[1] == 'verify':
+            from Closing_Services import Closing_Services
+            msg = Closing_Services(driver).closing_verify()
 
-                from Closing_Services import Closing_Services
-                msg = Closing_Services(driver).closing_verify()
+        if option[1] == 'execute':
 
-            if option[1] == 'execute':
+            from Closing_Services import Closing_Services
+            msg = Closing_Services(driver).closing_execute()
+    
+    ## Scheduling Services
+    if option[0] == 'schedule':
 
-                from Closing_Services import Closing_Services
-                msg = Closing_Services(driver).closing_execute()
-        
-        ## Scheduling Services
-        if option[0] == 'schedule':
-
-            if option[1] == 'verify':
-
-                driver.execute_script("window.open('');")
-                driver.switch_to.window(driver.window_handles[1])
-
-                from Systems import Systems
-                Systems(driver).system_2_access()
-
-                from Scheduling_Services import Scheduling_Services
-                msg = Scheduling_Services(driver).scheduling_verify()
-
-                driver.close()
-                driver.switch_to.window(driver.window_handles[0])
-
-            if option[1] == 'execute':
-                from Scheduling_Services import Scheduling_Services
-                msg = Scheduling_Services(driver).scheduling_execute()
-
-        ## Multiple
-        if option[0] == 'multiple':
-
-            from Multiple_Registers import Multiple_Registers
-            msg = Multiple_Registers(driver).multiple_verify()
-
-        ## Removals
-        if option[0] == 'removals':
-
-            from Removals import Removals
-            msg = Removals(driver).removals_verify()
-
-        ## Unlock Connection
-        if option[0] == 'unlock':
-
-            id_list = option[1].split('-')
-            from Unlock_Connection import Unlock_Connection
-            msg = Unlock_Connection(driver).search_register('id', id_list)
-
-        ## Clear Connection
-        if option[0] == 'disc':
-
-            register_id = option[1]
-            from Clear_Connection import Clear_Connection
-            msg = Clear_Connection(driver).search_register('id', register_id)
-
-        ## Contract Activation
-        if option[0] == 'contract':
-
-            from Contract_Activation import Contract_Activation
-            msg = Contract_Activation(driver).contract_activation()
-            
-        ## Attendances
-        if option[0] == 'transfer':
+        if option[1] == 'verify':
 
             driver.execute_script("window.open('');")
             driver.switch_to.window(driver.window_handles[1])
@@ -125,29 +79,104 @@ def commandline():
             from Systems import Systems
             Systems(driver).system_2_access()
 
-            from Attendances import Attendances
-            code = option[1] if len(option) > 1 else '0'
-            msg = Attendances(driver).transfer(code)
+            from Scheduling_Services import Scheduling_Services
+            msg = Scheduling_Services(driver).scheduling_verify()
 
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
 
-        ## Terminal Clean
-        if option[0] == 'clear':
-            os.system('cls')
+        if option[1] == 'execute':
+            from Scheduling_Services import Scheduling_Services
+            msg = Scheduling_Services(driver).scheduling_execute()
 
-        try: message(msg)
-        except: pass
+    ## Multiple Registers
+    if option[0] == 'multiple':
 
-    except Exception as err:
-        print(f'\n{error}An error has occurred:\n\n{detail}{traceback.format_exc()}{reset}')
-    
-    finally:
-        commandline()
+        from Multiple_Registers import Multiple_Registers
+        msg = Multiple_Registers(driver).multiple_verify()
+
+    ## Removals
+    if option[0] == 'removals':
+
+        from Removals import Removals
+        msg = Removals(driver).removals_verify()
+
+    ## Unlock Connection
+    if option[0] == 'unlock':
+
+        id_list = option[1].split('-')
+        from Unlock_Connection import Unlock_Connection
+        msg = Unlock_Connection(driver).search_register('id', id_list)
+
+    ## Clear Connection
+    if option[0] == 'disc':
+
+        register_id = option[1]
+        from Clear_Connection import Clear_Connection
+        msg = Clear_Connection(driver).search_register('id', register_id)
+
+    ## Contract Activation
+    if option[0] == 'contract':
+
+        from Contract_Activation import Contract_Activation
+        msg = Contract_Activation(driver).contract_activation()
+        
+    ## Attendances Transfer
+    if option[0] == 'transfer':
+
+        driver.execute_script("window.open('');")
+        driver.switch_to.window(driver.window_handles[1])
+
+        from Systems import Systems
+        Systems(driver).system_2_access()
+
+        from Attendances import Attendances
+        code = option[1] if len(option) > 1 else '0'
+        msg = Attendances(driver).transfer(code)
+
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+
+    ## Attendances Message
+    if option[0] == 'message':
+
+        tags = input(f'\n {info}>>{reset}  ').split(' - ')
+
+        main_tag = tags[0] 
+        counter_tag = tags[1] if len(tags) > 1 else 'not-used'
+        finish = tags[2] if len(tags) > 2 else False
+
+        text = input(f'\n {info}>>{reset}  ')
+
+        driver.execute_script("window.open('');")
+        driver.switch_to.window(driver.window_handles[1])
+
+        from Systems import Systems
+        Systems(driver).system_2_access()
+
+        from Attendances import Attendances
+        code = option[1] if len(option) > 1 else '0'
+        msg = Attendances(driver).message(main_tag, counter_tag, finish, text)
+
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+
+    ## Terminal Historic
+    if option[0] == 'hist':
+        print(detail)
+        for hist in historic:
+            print('    ' + DATETIME.now_format() + ' ' + detail + hist + reset)
+
+    ## Terminal Clean
+    if option[0] == 'clear':
+        os.system('cls')
+
+    try:
+        historic.append(msg[1])
+        message(msg)
+    except:
+        pass
+
+    commandline()
 
 commandline()
-
-
-# XPATH Customer Infos
-# OS (Register)  -->   /html/body/form[3]/ ...
-# Customers      -->   /html/body/form[2]/ ...
