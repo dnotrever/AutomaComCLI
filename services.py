@@ -135,7 +135,9 @@ class Services:
 
                     registers.append(data)
 
-                    for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                    for _ in range(2):
+                        time.sleep(1)
+                        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
                 if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
                     next_btn = self.wait.until(located((By.CSS_SELECTOR, 'i[title="Próximo"]')))

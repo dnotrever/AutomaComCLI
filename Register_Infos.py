@@ -52,11 +52,15 @@ class Register_Infos:
         ## Get Band
         band = self.wait.until(located((By.XPATH, f'/html/body/form[{form}]/div[3]/div[7]/dl/div/div/div[5]/table/tbody/tr/td[12]/div'))).text
 
-        ## Login
-        self.wait.until(clickable((By.XPATH, f'/html/body/form[{form}]/div[3]/ul/li[8]'))).click()
+        try:
 
-        ## Get Login
-        login = self.wait.until(located((By.XPATH, f'/html/body/form[{form}]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[11]/div'))).text
+            ## Login
+            self.wait.until(clickable((By.XPATH, f'/html/body/form[{form}]/div[3]/ul/li[8]'))).click()
+
+            ## Get Login
+            login = self.wait.until(located((By.XPATH, f'/html/body/form[{form}]/div[3]/div[8]/dl/div/div/div[5]/table/tbody/tr/td[11]/div'))).text
+        
+        except: pass
 
         return [name, condominium, block, apt, complement, district, phone, login, band]
 

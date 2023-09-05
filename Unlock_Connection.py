@@ -42,14 +42,14 @@ class Unlock_Connection:
             time.sleep(6)
 
             ## Refresh
-            refresh_btn = self.wait.until(clickable((By.CSS_SELECTOR, 'i[title="Atualizar"]')))
+            refresh_btn = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[2]/div[1]/span[1]/i[3]')))
             self.driver.execute_script('arguments[0].click();', refresh_btn)
 
             time.sleep(1)
 
-            # message = self.wait.until(located((By.CSS_SELECTOR, '#ixc_notificacao > div > div:nth-child(3) > div:nth-child(1)')))
+            ## Status
+            status = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[7]/dl/div/div/div[5]/table/tbody/tr/td[4]/div/span')))
 
-            # if 'Erro' in message.text:
             if 'Bloqueio Automático' in status.text or 'Financeiro em atraso' in status.text:
 
                 ## Edit Tab
