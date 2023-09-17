@@ -29,3 +29,20 @@ def located(element):
 
 def all_located(element):
     return EC.presence_of_all_elements_located(element)
+
+#----- Element Interactions -----#
+
+def wait_located_element(self, element):
+    return self.wait.until(located((By.XPATH, element)))
+
+def script_click(self, element):
+    return self.driver.execute_script('arguments[0].click();', wait_located_element(self, element))
+
+def get_value(self, element):
+    return wait_located_element(self, element).get_attribute('value')
+
+def get_text(self, element):
+    return wait_located_element(self, element).text
+
+def send_keys(self, element, keys):
+    return wait_located_element(self, element).send_keys(keys)

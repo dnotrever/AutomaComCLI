@@ -3,49 +3,62 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, get_actions, located, all_located, script_click, get_value
 
 from Services_Order import Services_Order
 from Register_Infos import Register_Infos
 
+from traceback_formatted import traceback_formatted
+
 class Services:
 
     def __init__(self, driver):
-
         self.driver = driver
         self.wait = get_wait(self.driver)
         self.actions = get_actions(self.driver)
-
         self.tomorrow_date = datetime.now() + timedelta(days=1)
         self.info = '\033[36m'
 
     def format_phone(self, phone):
+
         phone = ''.join(re.findall('[0-9]+', phone))
+
         if (len(phone) > 10):
             return f'({phone[:2]}) {phone[2:7]}-{phone[7:11]}'
+        
         elif (len(phone) > 9):
             return f'({phone[:2]}) {phone[2:6]}-{phone[6:10]}'
+        
         else:
             return phone
 
     def format_subject(self, subject):
+
         plan_subjects = {
             'Migração de Tecnologia': ['Migração de tecnologia e Upgrade de banda', 'Migração de Plano'],
             'Troca de Roteador': ['Upgrade de Velocidade', 'Downgrade de Velocidade', 'Troca de Roteador'],
             'Mudança de endereço': ['Mudança de Endereço'],
             'Retirada de Equipamentos': ['Retirada de Equipamentos']
         }
+
+        subject_format = 'Visita Técnica'
+
         for service_type, subject_list in plan_subjects.items():
-            if subject in subject_list: return service_type
-            else: return 'Visita Técnica'
+            if subject in subject_list:
+                subject_format = service_type
+                break
+
+        return subject_format
 
     def generate_services(self, subject, name, condominium, block, apt, phone, description, login, band, complement, tomorrow_date, services):
 
         subject = self.format_subject(subject)
         phone = self.format_phone(phone)
 
-        if subject != 'Retirada de Equipamentos': description = re.sub(r'[\n\r]+', ' ', description) + '\n' + login + ' - ' + band
-        else: description = description.split('\n')[0] 
+        if subject != 'Retirada de Equipamentos':
+            description = re.sub(r'[\n\r]+', ' ', description) + '\n' + login + ' - ' + band
+        else:
+            description = description.split('\n')[0] 
 
         services.write(f'\n*{subject} - {tomorrow_date}*\n{name}\n{condominium} - Bloco {block.zfill(2)} - Apto {apt.zfill(2)}\n{phone}\n{description}\n')
 
@@ -118,17 +131,17 @@ class Services:
 
                     subject = subject.text
 
-                    get_actions(self.driver).double_click(service).perform()
+                    self.actions.double_click(service).perform()
 
                     time.sleep(1)
 
                     ## Get Description
-                    description = self.wait.until(located((By.ID, 'mensagem'))).get_attribute('value')
+                    description = get_value(self, '/html/body/form[2]/div[3]/div[1]/dl[19]/dd/textarea')
 
-                    ## Register_Infos Register
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img'))).click()
+                    ## Register Edit
+                    script_click(self, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img')
 
-                    data = Register_Infos(self.driver).get_register_infos('3')
+                    data = Register_Infos(self.driver).get_register_infos(3)
 
                     data.append(subject)
                     data.append(description)
@@ -137,24 +150,40 @@ class Services:
 
                     for _ in range(2):
                         time.sleep(1)
-                        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                        self.actions.send_keys(Keys.ESCAPE).perform()
 
                 if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
-                    next_btn = self.wait.until(located((By.CSS_SELECTOR, 'i[title="Próximo"]')))
-                    self.driver.execute_script('arguments[0].click();', next_btn)
-                    service_index = 0
+
+                    ## Next Page Button
+                    script_click(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[5]/div[2]/span[1]/i[4]')
                     time.sleep(1)
 
-            df_services = pd.DataFrame(registers, columns=['Register_Name', 'Cond_Code', 'Block', 'Apt', 'Complement', 'District', 'Phone', 'Login', 'Band', 'Subject', 'Description'])
+                    service_index = 0
+
+            columns = [
+                'Register_Name',
+                'Cond_Code',
+                'Block',
+                'Apt',
+                'Complement',
+                'District',
+                'Phone',
+                'Login',
+                'Band',
+                'Subject',
+                'Description'
+            ]
+
+            df_services = pd.DataFrame(registers, columns=columns)
 
             time.sleep(1)
-            get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            self.actions.send_keys(Keys.ESCAPE).perform()
 
             services_count = self.services_list(df_services)
 
             return ['success', ' Services listed: ' + self.info + str(services_count)]
-    
+
         except:
 
-            return ['error', traceback.format_exc()]
+            return ['error', traceback_formatted(traceback.format_exc())]
 

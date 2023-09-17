@@ -169,8 +169,12 @@ class Scheduling_Services:
                     ## Service Tab
                     self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[10]/a'))).click()
 
+                    time.sleep(1)
+
                     ## New Service
                     self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[10]/dl/div/div/div[3]/div[1]/button[1]'))).click()
+
+                    time.sleep(1)
 
                     ## Subject
                     self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[10]/dd/input'))).send_keys(subject)
@@ -212,16 +216,18 @@ class Scheduling_Services:
                     self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input').click()
                     self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input').send_keys(f'{date} {period[0]}:00')
 
-                    time.sleep(1)
+                    time.sleep(2)
 
                     ## Final DateTime
                     self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input').click()
                     self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input').send_keys(f'{date} {period[1]}:00')
 
-                    time.sleep(1)
+                    time.sleep(2)
 
                     ## Save OS
                     self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[2]/button[2]'))).click()
+
+                    time.sleep(2)
 
                     for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 

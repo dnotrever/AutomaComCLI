@@ -55,7 +55,7 @@ class Clear_Connection:
             register = self.clear_register_connection()
             
             time.sleep(1)
-            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
 
             return ['success', ' Successfully register connection cleaned. ' + self.detail + '[ ' + register + ' ]']
 

@@ -1,51 +1,43 @@
-import time, re
-from datetime import datetime, timedelta
+import time
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import get_wait, script_click, get_text, send_keys
 
 class Services_Order:
 
     def __init__(self, driver):
-
         self.driver = driver
         self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
 
     def open_services(self, date):
 
         ## Service Order
-        service_order = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[28]/ul/li[1]/a')))
-        self.driver.execute_script('arguments[0].click();', service_order)
+        script_click(self, '/html/body/div[1]/div[3]/div/div[1]/div[28]/ul/li[1]/a')
 
         ## Uncheck Opens
-        opens = self.wait.until(located((By.ID, 'Status_A')))
-        self.driver.execute_script('arguments[0].click();', opens)
+        script_click(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[2]/table/tbody/tr[2]/td[1]/input')
 
         ## Uncheck Forwardeds
-        forwardeds = self.wait.until(located((By.ID, 'Status_EN')))
-        self.driver.execute_script('arguments[0].click();', forwardeds)
+        script_click(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[2]/table/tbody/tr[3]/td[1]/input')
 
         ## Date
         date_format = date.strftime('%d/%m/%Y')
 
-        # test_date = '31/07/2023' ## TEST
+        # test_date = '31/07/2023' ##TEST
 
-        date1_input = self.wait.until(located((By.ID, 'data1')))
-        self.driver.execute_script('arguments[0].click();', date1_input)
-        date1_input.send_keys(date_format)
+        date1 = '/html/body/div[2]/div/div[3]/table/tbody/tr/td[3]/div[3]/input[1]'
+        script_click(self, date1)
+        send_keys(self, date1, date_format)
 
-        date2_input = self.wait.until(located((By.ID, 'data2')))
-        self.driver.execute_script('arguments[0].click();', date2_input)
-        date2_input.send_keys(date_format)
+        date2 = '/html/body/div[2]/div/div[3]/table/tbody/tr/td[3]/div[3]/input[2]'
+        script_click(self, date2)
+        send_keys(self, date2, date_format)
 
         time.sleep(1)
 
         ## Filters OK
-        confirm_btn = self.wait.until(located((By.CSS_SELECTOR, 'input[value="OK"]')))
-        self.driver.execute_script('arguments[0].click();', confirm_btn)
+        script_click(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[5]/div[1]/input[1]')
 
         time.sleep(1)
 
-        return self.wait.until(located((By.CLASS_NAME, 'pPageStat'))).text.split(' ') # 2 4
+        return get_text(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[5]/div[2]/span[2]').split(' ')
 

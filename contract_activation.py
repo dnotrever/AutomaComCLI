@@ -1,4 +1,4 @@
-import time, traceback
+import time
 
 from Selenium import By, Keys
 from Selenium import get_wait, get_actions, clickable, located
@@ -14,10 +14,6 @@ class Contract_Activation:
         self.actions = get_actions(self.driver)
 
         self.detail = '\033[90m'
-
-    def traceback_formatted(self, traceback):
-        index = traceback.find('Stacktrace:')
-        return traceback[:index] if index != -1 else traceback
 
     def contract_activation(self):
 

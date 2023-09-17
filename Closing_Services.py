@@ -34,7 +34,7 @@ class Closing_Services:
 
                 register_id = 0
 
-                time.sleep(1)
+                time.sleep(2)
 
                 ## Customers List
                 services = self.wait.until(all_located((By.CSS_SELECTOR, 'tr[data-campoautoincrement="id"]')))
@@ -52,7 +52,7 @@ class Closing_Services:
                     
                     get_actions(self.driver).double_click(service).perform()
 
-                    time.sleep(1)
+                    time.sleep(2)
 
                     register_id = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/input'))).get_attribute('value')
 

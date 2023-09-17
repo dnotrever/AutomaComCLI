@@ -20,12 +20,12 @@ messageColors = {
     'error': '\033[31m', ## red
     'info': '\033[36m', ## blue
     'detail': '\033[90m', ## gray
-    'reset': '\033[0m',
+    'reset': '\033[0m', ## reset color
 }
 
 others, success, error, info, detail, reset = messageColors.values()
 
-parag = f'\n {others}$~{reset}  '
+parag = f'\n {others}$ ~{reset} '
 
 def message(msg):
 
@@ -36,7 +36,7 @@ def message(msg):
         print('\n' + error + 'An error has occurred:')
         print('\n' + detail + msg[1] + reset)
 
-def commandline():
+def command_line():
 
     option = input(parag).split(' ')
 
@@ -177,6 +177,6 @@ def commandline():
     except:
         pass
 
-    commandline()
+    command_line()
 
-commandline()
+command_line()
