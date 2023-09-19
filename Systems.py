@@ -1,16 +1,13 @@
 import os
 from dotenv import load_dotenv
 
-from Selenium import By
-from Selenium import get_wait, get_actions, clickable, located
+from Selenium import interaction
 
 class Systems:
 
     def __init__(self, driver):
 
         self.driver = driver
-        self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
 
         load_dotenv()
 
@@ -24,29 +21,39 @@ class Systems:
     
     def system_1_access(self):
 
-        self.driver.get(self.sys_1_url)
+        driver = self.driver
 
-        self.wait.until(located((By.NAME, 'email'))).send_keys(self.sys_1_email)
-        self.wait.until(located((By.NAME, 'senha'))).send_keys(self.sys_1_pass)
+        driver.get(self.sys_1_url)
 
-        self.wait.until(clickable((By.ID, 'guarda_mail'))).click()
+        interaction(driver, 'send_keys', '/html/body/div[3]/div/div[4]/form/div[2]/input', self.sys_1_email)
+        interaction(driver, 'send_keys', '/html/body/div[3]/div/div[4]/form/div[3]/input', self.sys_1_pass)
 
-        self.wait.until(located((By.ID, 'entrar'))).click()
-            
-        if self.wait.until(located((By.ID, 'resp'))):
-            try: self.wait.until(clickable((By.ID, 'entrar'))).click()
-            except: pass
+        interaction(driver, 'click', '/html/body/div[3]/div/div[4]/form/div[4]/div[1]/i')
+
+        interaction(driver, 'click', '/html/body/div[3]/div/div[4]/form/div[5]/button[2]')
+
+        if interaction(driver, 'selector', 'div[class="alerts"]'):
+
+            try:
+                interaction(driver, 'click', '/html/body/div[3]/div/div[4]/form/div[5]/button[2]')
+
+            except:
+                pass
 
     def system_2_access(self):
 
-        self.driver.get(self.sys_2_url)
+        driver = self.driver
 
-        self.wait.until(located((By.NAME, 'username'))).send_keys(self.sys_2_email)
-        self.wait.until(located((By.NAME, 'password'))).send_keys(self.sys_2_pass)
+        driver.get(self.sys_2_url)
 
-        self.wait.until(clickable((By.ID, 'btn_login'))).click()
+        interaction(driver, 'send_keys', '/html/body/div/div[2]/div[2]/form/div[1]/input', self.sys_2_email)
+        interaction(driver, 'send_keys', '/html/body/div/div[2]/div[2]/form/div[2]/input', self.sys_2_pass)
 
-        try: self.wait.until(clickable((By.CLASS_NAME, 'btn-blue'))).click()
-        except: pass
+        interaction(driver, 'click', '/html/body/div/div[2]/div[2]/form/div[4]/div[1]/button')
 
+        try:
+            interaction(driver, 'click', '/html/body/div[2]/div[2]/div/div/div/div/div/div/div/div[4]/button[2]')
+
+        except:
+            pass
 

@@ -1,3 +1,4 @@
+import time
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -13,36 +14,72 @@ def get_driver():
     driver.maximize_window()
     return driver
 
-def get_wait(driver, timeout=30):
-    wait = WebDriverWait(driver, timeout)
-    return wait
+def wait_located(driver, element, mode='xpath', timeout=30):
+    if mode == 'xpath':
+        return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, element)))
+    if mode == 'selector':
+        return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CSS_SELECTOR, element)))
 
-def get_actions(driver):
-    actions = ActionChains(driver)
-    return actions
+def wait_all_located(driver, element, mode='xpath', timeout=30):
+    if mode == 'xpath':
+        return WebDriverWait(driver, timeout).until(EC.presence_of_all_elements_located((By.XPATH, element)))
+    if mode == 'selector':
+        return WebDriverWait(driver, timeout).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, element)))
 
-def clickable(element):
-    return EC.element_to_be_clickable(element)
+def interaction(driver, type, element, keys=''):
 
-def located(element):
-    return EC.presence_of_element_located(element)
+    #--- XPath (default) ---#
 
-def all_located(element):
-    return EC.presence_of_all_elements_located(element)
+    if type == 'get':
+        return wait_located(driver, element)
+    
+    if type == 'get_all':
+        return wait_all_located(driver, element)
+    
+    if type == 'click':
+        return driver.execute_script('arguments[0].click();', wait_located(driver, element))
+    
+    if type == 'click --e':
+        return driver.execute_script('arguments[0].click();', element)
+    
+    if type == 'send_keys':
+        return wait_located(driver, element).send_keys(keys)
+    
+    if type == 'clear':
+        return wait_located(driver, element).clear()
+    
+    if type == 'text':
+        return wait_located(driver, element).text
+    
+    if type == 'value':
+        return wait_located(driver, element).get_attribute('value')
+    
+    #--- Others (default) ---#
 
-#----- Element Interactions -----#
+    if type == 'selector':
+        return wait_located(driver, element, 'selector')
+    
+    if type == 'selector_all':
+        return wait_all_located(driver, element, 'selector')
 
-def wait_located_element(self, element):
-    return self.wait.until(located((By.XPATH, element)))
+def action(driver, key, element=''):
 
-def script_click(self, element):
-    return self.driver.execute_script('arguments[0].click();', wait_located_element(self, element))
+    time.sleep(1)
 
-def get_value(self, element):
-    return wait_located_element(self, element).get_attribute('value')
+    if key == 'esc':
+        return ActionChains(driver).send_keys(Keys.ESCAPE).perform()
 
-def get_text(self, element):
-    return wait_located_element(self, element).text
+    if key == 'enter':
+        return ActionChains(driver).send_keys(Keys.ENTER).perform()
+    
+    if key == 'up':
+        return ActionChains(driver).send_keys(Keys.UP).perform()
+    
+    if key == 'tab':
+        return ActionChains(driver).send_keys(Keys.TAB).perform()
+    
+    if key == 'double':
+        return ActionChains(driver).double_click(element).perform()
+    
 
-def send_keys(self, element, keys):
-    return wait_located_element(self, element).send_keys(keys)
+##  WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, '')))

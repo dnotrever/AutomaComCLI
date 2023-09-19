@@ -1,4 +1,4 @@
-import time
+import time, traceback
 
 from Selenium import By, Keys
 from Selenium import get_wait, get_actions, clickable, located

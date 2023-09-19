@@ -1,32 +1,30 @@
 import time, traceback
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from Selenium import interaction, action
 
 from Search_Register import Search_Register as SEARCH
+
+from traceback_formatted import traceback_formatted
 
 class Scheduling_Services:
 
     def __init__(self, driver):
-
         self.driver = driver
-        self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
-
         self.scheduling_sheet = 'sheets/Scheduling_Services.xlsx'
     
     def scheduling_verify(self):
 
+        driver = self.driver
+
         try:
 
             ## Attendances
-            attend_btn = self.wait.until(located((By.XPATH, '/html/body/div/div[4]/div[5]/i')))
-            self.driver.execute_script('arguments[0].click();', attend_btn)
+            interaction(driver, 'click', '/html/body/div/div[4]/div[5]/i')
 
-            attend_list = self.wait.until(located((By.CLASS_NAME, 'list_dados')))
+            attend_list = interaction(driver, 'selector', 'div[class="list_dados"]')
 
-            attend_body = get_wait(attend_list).until(all_located((By.CLASS_NAME, 'corpo')))
+            attend_body = interaction(attend_list, 'selector_all', 'div[class="corpo"]')
 
             services = []
 
@@ -39,11 +37,11 @@ class Scheduling_Services:
 
                 if 'Agendar Visita' in tags:
 
-                    self.driver.execute_script('arguments[0].click();', attendance)
+                    interaction(driver, 'click', attendance)
 
-                    customer_id = self.wait.until(located((By.XPATH, '/html/body/div/div[6]/div[2]/div[4]/span'))).text
+                    customer_id = interaction(driver, 'text', '/html/body/div/div[6]/div[2]/div[4]/span')
 
-                    notes = self.wait.until(located((By.CLASS_NAME, 'observacao_mensagem'))).text.split(' # ')
+                    notes = interaction(driver, 'text', '/html/body/div/div[6]/div[2]/div[12]/div/div[2]/div[1]').split(' # ')
 
                     subject = notes[0]
                     date = notes[1]
@@ -78,15 +76,16 @@ class Scheduling_Services:
 
         except:
             
-            return ['error', traceback.format_exc()]
+            return ['error', traceback_formatted(traceback.format_exc())]
 
     def scheduling_execute(self):
+
+        driver = self.driver
             
         try:
 
             ## Search
-            registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
-            self.driver.execute_script('arguments[0].click();', registers)
+            interaction(driver, 'click', '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')
 
             schedulings = pd.read_excel(self.scheduling_sheet)
 
@@ -105,145 +104,142 @@ class Scheduling_Services:
                 if subject == 0:
 
                     ## OS
-                    self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/ul/li[11]/a'))).click()
+                    interaction(driver, 'click', '/html/body/form[2]/div[3]/ul/li[11]/a')
 
                     ## Description?
                     if not pd.isna(description):
 
                         ## Edit
-                        self.wait.until(clickable((By.XPATH, '/html/body/form/div[3]/div[11]/dl/div/div/div[2]/div[1]/button[3]'))).click()
+                        interaction(driver, 'click', '/html/body/form/div[3]/div[11]/dl/div/div/div[2]/div[1]/button[3]')
 
                         time.sleep(1)
 
                         ## Description
-                        self.wait.until(clickable((By.CSS_SELECTOR, '#mensagem'))).click()
-                        for _ in range(30): get_actions(self.driver).send_keys(Keys.UP).perform()
-                        self.wait.until(clickable((By.CSS_SELECTOR, '#mensagem'))).send_keys(description)
+                        message = '/html/body/form[3]/div[3]/div[1]/dl[28]/dd/textarea'
+                        interaction(driver, 'click', message)
+                        for _ in range(15): action(driver, 'up')
+                        interaction(driver, 'click', message, description)
+
+                        time.sleep(2)
 
                         ## Save
-                        # self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[2]/button[2]'))).click()
-                        self.wait.until(clickable((By.CSS_SELECTOR, r'#\33 _form > div.tDiv > button:nth-child(2)'))).click()
+                        interaction(driver, 'click', '/html/body/form[2]/div[2]/button[2]')
 
-                        time.sleep(1)
-                        get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                        action(driver, 'esc')
 
                     time.sleep(2)
 
                     ## Actions
-                    actions_btn = self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/div/span')))
-                    self.driver.execute_script('arguments[0].click();', actions_btn)
+                    actions_btn = interaction(driver, 'click', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/div/span')
 
                     time.sleep(1)
 
                     ## Schedule Button
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[4]'))).click()
+                    interaction(driver, 'click', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[4]')
 
                     ## Dates
-                    date1_input = self.wait.until(located((By.XPATH, '/html/body/form[3]/div[3]/div/dl[3]/dd/input')))
-                    self.driver.execute_script('arguments[0].click();', date1_input)
-                    date1_input.send_keys(date + ' 09:00:00')
+                    date1 = '/html/body/form[3]/div[3]/div/dl[3]/dd/input'
+                    interaction(driver, 'click', date1)
+                    interaction(driver, 'send_keys', date1, date + ' 09:00:00')
 
-                    date2_input = self.wait.until(located((By.XPATH, '/html/body/form[3]/div[3]/div/dl[4]/dd/input')))
-                    self.driver.execute_script('arguments[0].click();', date2_input)
-                    date2_input.send_keys(date + ' 18:00:00')
+                    date2 = '/html/body/form[3]/div[3]/div/dl[4]/dd/input'
+                    interaction(driver, 'click', date2)
+                    interaction(driver, 'send_keys', date2, date + ' 18:00:00')
 
                     ## Message
-                    self.wait.until(located((By.XPATH, '/html/body/form[3]/div[3]/div/dl[6]/dd/textarea'))).send_keys('Agendado.')
+                    interaction(driver, 'send_keys', '/html/body/form[3]/div[3]/div/dl[6]/dd/textarea', 'Agendado.')
 
                     ## Collaborator
-                    collaborator = self.wait.until(located((By.XPATH, '/html/body/form[3]/div[3]/div/dl[7]/dd/input')))
-                    self.driver.execute_script('arguments[0].click();', collaborator)
-                    collaborator.send_keys('21')
+                    interaction(driver, 'send_keys', '/html/body/form[3]/div[3]/div/dl[7]/dd/input', '21')
 
-                    time.sleep(1)
-                    get_actions(self.driver).send_keys(Keys.TAB).perform()
+                    action(driver, 'tab')
 
                     time.sleep(1)
 
                     ## Save
-                    self.wait.until(clickable((By.CSS_SELECTOR, r'#\33 _form > div.tDiv > button:nth-child(1)'))).click()
+                    interaction(driver, 'selector', r'#\33 _form > div.tDiv > button:nth-child(1)')
                     
                 ## Create Service and OS
                 else:
 
                     ## Service Tab
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/ul/li[10]/a'))).click()
+                    interaction(driver, 'click', '/html/body/form[2]/div[3]/ul/li[10]/a')
 
-                    time.sleep(1)
+                    time.sleep(2)
 
-                    ## New Service
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[2]/div[3]/div[10]/dl/div/div/div[3]/div[1]/button[1]'))).click()
+                    ## New Service #--> CORRIGIR: ele pega o botão de criar novo cliente 
+                    interaction(driver, 'click --e', interaction(driver, 'selector', 'button[name="novo"]'))
 
                     time.sleep(1)
 
                     ## Subject
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[10]/dd/input'))).send_keys(subject)
+                    interaction(driver, 'send_keys', '/html/body/form[3]/div[3]/div[1]/dl[10]/dd/input', subject)
 
                     ## Department
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[18]/dd/input[1]'))).send_keys('2')
+                    interaction(driver, 'send_keys', '/html/body/form[3]/div[3]/div[1]/dl[18]/dd/input[1]', '2')
 
-                    time.sleep(1)
-                    get_actions(self.driver).send_keys(Keys.TAB).perform()
+                    action(driver, 'tab')
 
                     ## Description
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[3]/div[1]/dl[28]/dd/textarea'))).send_keys(description)
+                    interaction(driver, 'send_keys', '/html/body/form[3]/div[3]/div[1]/dl[28]/dd/textarea', description)
 
                     time.sleep(2)
 
                     ## Save Service
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[2]'))).click()
+                    interaction(driver, 'click', '/html/body/form[3]/div[2]/button[2]')
 
                     time.sleep(2)
 
                     ## OS Tab
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[3]/div[2]/button[5]'))).click()
+                    interaction(driver, 'click', '/html/body/form[3]/div[2]/button[5]')
 
                     time.sleep(2)
 
                     ## Sector
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[3]/div[1]/dl[17]/dd/input'))).send_keys('1')
+                    interaction(driver, 'send_keys', '/html/body/form[4]/div[3]/div[1]/dl[17]/dd/input', '1')
 
                     ## Collaborator
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[3]/div[1]/dl[18]/dd/input'))).clear()
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[3]/div[1]/dl[18]/dd/input'))).send_keys('21')
+                    interaction(driver, 'clear', '/html/body/form[4]/div[3]/div[1]/dl[18]/dd/input')
+                    interaction(driver, 'send_keys', '/html/body/form[4]/div[3]/div[1]/dl[18]/dd/input', '21')
+
+                    time.sleep(1)
 
                     ## DateTimes
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[3]/ul/li[3]/a'))).click()
+                    interaction(driver, 'click', '/html/body/form[4]/div[3]/ul/li[3]/a')
 
                     time.sleep(1)
 
                     ## Initial DateTime
-                    self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input').click()
-                    self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input').send_keys(f'{date} {period[0]}:00')
+                    interaction(driver, 'click', '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input')
+                    interaction(driver, 'send_keys', '/html/body/form[4]/div[3]/div[3]/dl[4]/dd/input', f'{date} {period[0]}:00')
 
                     time.sleep(2)
 
                     ## Final DateTime
-                    self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input').click()
-                    self.driver.find_element(By.XPATH, '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input').send_keys(f'{date} {period[1]}:00')
+                    interaction(driver, 'click', '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input')
+                    interaction(driver, 'send_keys', '/html/body/form[4]/div[3]/div[3]/dl[5]/dd/input', f'{date} {period[1]}:00')
 
-                    time.sleep(2)
+                    time.sleep(1)
 
                     ## Save OS
-                    self.wait.until(clickable((By.XPATH, '/html/body/form[4]/div[2]/button[2]'))).click()
+                    interaction(driver, 'click', '/html/body/form[4]/div[2]/button[2]')
 
                     time.sleep(2)
 
-                    for _ in range(2): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                    for _ in range(2):
+                        action(driver, 'esc')
 
-                time.sleep(1)
-                get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                action(driver, 'esc')
 
                 ## Clear Input Name
-                clear_name = self.wait.until(located((By.CSS_SELECTOR, r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')))
-                self.driver.execute_script('arguments[0].click();', clear_name)
+                clear = interaction(driver, 'selector', r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')
+                interaction(driver, 'click', clear)
 
-            time.sleep(1)
-            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            action(driver, 'esc')
 
             return ['success', ' Successfully services scheduled!']
     
         except:
                 
-            return ['error', traceback.format_exc()]
+            return ['error', traceback_formatted(traceback.format_exc())]
 

@@ -1,12 +1,11 @@
-import time, re, traceback
+import time, traceback, re 
 from datetime import datetime, timedelta
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, located, all_located, script_click, get_value
+from Selenium import interaction, action
 
-from Services_Order import Services_Order
-from Register_Infos import Register_Infos
+from Services_Order import Services_Order as SERVICES
+from Register_Infos import Register_Infos as REGISTER
 
 from traceback_formatted import traceback_formatted
 
@@ -14,8 +13,6 @@ class Services:
 
     def __init__(self, driver):
         self.driver = driver
-        self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
         self.tomorrow_date = datetime.now() + timedelta(days=1)
         self.info = '\033[36m'
 
@@ -103,10 +100,12 @@ class Services:
         return services_count
 
     def services_infos(self):
+
+        driver = self.driver
             
         try:
 
-            pagination = Services_Order.open_services(self, self.tomorrow_date)
+            pagination = SERVICES.open_services(driver, self.tomorrow_date)
 
             service_index = 0
 
@@ -117,31 +116,31 @@ class Services:
                 time.sleep(1)
 
                 ## Registers List
-                services = self.wait.until(all_located((By.CSS_SELECTOR, 'tr[data-campoautoincrement="id"]')))
+                services = interaction(driver, 'selector_all', 'tr[data-campoautoincrement="id"]')
 
                 service_index += 1
 
                 service = services[service_index-1]
 
                 ## Get Subject
-                subject_parent = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="su_oss_assunto.assunto"]')))
-                subject = get_wait(subject_parent).until(located((By.TAG_NAME, 'div')))
+                subject = interaction(service, 'selector', 'td[abbr="su_oss_assunto.assunto"]')
+                # subject = get_wait(subject_parent).until(located((By.TAG_NAME, 'div')))
 
                 if subject.text != 'Instalação':
 
                     subject = subject.text
 
-                    self.actions.double_click(service).perform()
+                    action(driver, 'double', service)
 
                     time.sleep(1)
 
                     ## Get Description
-                    description = get_value(self, '/html/body/form[2]/div[3]/div[1]/dl[19]/dd/textarea')
+                    description = interaction(driver, 'value', '/html/body/form[2]/div[3]/div[1]/dl[19]/dd/textarea')
 
                     ## Register Edit
-                    script_click(self, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img')
+                    interaction(driver, 'click', '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/button[3]/img')
 
-                    data = Register_Infos(self.driver).get_register_infos(3)
+                    data = REGISTER.get_register_infos(driver, 3)
 
                     data.append(subject)
                     data.append(description)
@@ -149,13 +148,12 @@ class Services:
                     registers.append(data)
 
                     for _ in range(2):
-                        time.sleep(1)
-                        self.actions.send_keys(Keys.ESCAPE).perform()
+                        action(driver, 'esc')
 
                 if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
 
                     ## Next Page Button
-                    script_click(self, '/html/body/div[2]/div/div[3]/table/tbody/tr/td[5]/div[2]/span[1]/i[4]')
+                    interaction(driver, 'click', '/html/body/div[2]/div/div[3]/table/tbody/tr/td[5]/div[2]/span[1]/i[4]')
                     time.sleep(1)
 
                     service_index = 0
@@ -176,8 +174,7 @@ class Services:
 
             df_services = pd.DataFrame(registers, columns=columns)
 
-            time.sleep(1)
-            self.actions.send_keys(Keys.ESCAPE).perform()
+            action(driver, 'esc')
 
             services_count = self.services_list(df_services)
 

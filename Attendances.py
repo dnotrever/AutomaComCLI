@@ -1,50 +1,51 @@
 import time
-from Selenium import By
-from Selenium import get_wait, get_actions, clickable, located, all_located
+
+from Selenium import interaction
 
 class Attendances:
 
     def __init__(self, driver):
-
         self.driver = driver
-        self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
 
     def define_attendant(self, code):
         attend = {
-            '0': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[11]', # RAP
-            '1': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[2]', # ALE
+            '0': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[11]', ## R
+            '1': '/html/body/div[2]/div/div[2]/form/div[2]/div[3]/select/option[2]', ## A
         }
         return attend.get(code, None)
 
     def transfer(self, code):
 
+        driver = self.driver
+
         ## Attedances
-        self.wait.until(clickable((By.XPATH, '/html/body/div/div[4]/div[5]'))).click()
+        interaction(driver, 'click', '/html/body/div/div[4]/div[5]')
 
         time.sleep(2)
 
-        attendances = self.wait.until(all_located((By.CLASS_NAME, 'chat')))
+        attendances = interaction(driver, 'selector_all', 'div[class="chat"]')
 
         for customer in attendances:
 
             time.sleep(1)
 
-            self.driver.execute_script('arguments[0].click();', customer)
+            interaction(driver, 'click --e', customer)
 
             order = customer.get_attribute('style').split('-')[1][:2]
+
+            print(f'\n{order}')
 
             ## No Fixed
             if order == '16':
 
                 ## Transfer Button 1
-                self.wait.until(clickable((By.CLASS_NAME, 'darken-2'))).click()
+                interaction(driver, 'click', '/html/body/div/div[6]/div[2]/div[21]/button[2]')
 
                 ## Support Option
-                self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]'))).click()
+                interaction(driver, 'click', '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]')
 
                 ## Transfer Button 2
-                self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[2]/form/div[1]/button'))).click()
+                interaction(driver, 'click', '/html/body/div[2]/div/div[2]/form/div[1]/button')
 
             ## Fixed
             elif order == '17':
@@ -52,40 +53,42 @@ class Attendances:
                 message = 'Estarei transferindo o atendimento para o nosso próximo atendente para darmos continuidade à sua tratativa. Nosso atendimento de Suporte Técnico Remoto agora é *24 horas*!'
 
                 ## Message
-                self.wait.until(clickable((By.ID, 'input_envio_msg'))).send_keys(message)
+                interaction(driver, 'send_keys', '/html/body/div/div[6]/div[1]/div[3]/div[1]/div[2]', message)
 
                 ## Send Message
-                self.wait.until(clickable((By.XPATH, '/html/body/div/div[6]/div[1]/div[3]/div[3]'))).click()
+                interaction(driver, 'click', '/html/body/div/div[6]/div[1]/div[3]/div[3]')
 
                 time.sleep(1)
 
                 ## Transfer Button 1
-                self.wait.until(clickable((By.CLASS_NAME, 'darken-2'))).click()
+                interaction(driver, 'click', '/html/body/div/div[6]/div[2]/div[21]/button[2]')
 
                 ## Support Option
-                self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]'))).click()
+                interaction(driver, 'click', '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]')
 
                 ## Attedant
-                self.wait.until(clickable((By.XPATH, self.define_attendant(code)))).click()
+                interaction(driver, 'click', self.define_attendant(code))
 
                 ## Transfer Button 2
-                self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div/div[2]/form/div[1]/button'))).click()
+                interaction(driver, 'click', '/html/body/div[2]/div/div[2]/form/div[1]/button')
 
                 time.sleep(1)
 
                 ## OK Button
-                self.wait.until(clickable((By.CLASS_NAME, 'btn-blue'))).click()
+                interaction(driver, 'click', '/html/body/div[3]/div[2]/div/div/div/div/div/div/div/div[4]/button[2]')
 
     def message(self, main_tag, counter_tag, finish, text):
+
+        driver = self.driver
 
         text = text.replace(' + ', '\n') + '\n'
 
         ## Attedances
-        self.wait.until(clickable((By.XPATH, '/html/body/div/div[4]/div[5]/i'))).click()
+        interaction(driver, 'click', '/html/body/div/div[4]/div[5]/i')
 
         time.sleep(2)
 
-        attendances = self.wait.until(all_located((By.CLASS_NAME, 'chat')))
+        attendances = interaction(driver, 'selector_all', 'div[class="chat"]')
 
         count = 0
 
@@ -99,18 +102,16 @@ class Attendances:
 
                 count += 1
 
-                self.driver.execute_script('arguments[0].click();', customer)
+                interaction(driver, 'click', customer)
 
                 ## Message Box
-                self.wait.until(clickable((By.XPATH, '/html/body/div/div[6]/div[1]/div[3]/div[1]/div[2]'))).send_keys(text)
+                interaction(driver, 'send_keys', '/html/body/div/div[6]/div[1]/div[3]/div[1]/div[2]', text)
 
                 if finish:
 
-                   finish_btn = self.wait.until(clickable((By.XPATH, '/html/body/div/div[6]/div[2]/div[21]/button[1]')))
-                   self.driver.execute_script('arguments[0].click();', finish_btn)
+                   interaction(driver, 'click', '/html/body/div/div[6]/div[2]/div[21]/button[1]')
 
-                   ok_btn = self.wait.until(clickable((By.XPATH, '/html/body/div[2]/div[2]/div/div/div/div/div/div/div/div[4]/button[2]')))
-                   self.driver.execute_script('arguments[0].click();', ok_btn)
+                   interaction(driver, 'click', '/html/body/div[2]/div[2]/div/div/div/div/div/div/div/div[4]/button[2]')
 
         return ['success', f'Message sent to {count} customers.']
 
