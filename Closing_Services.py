@@ -2,10 +2,10 @@ import time, traceback
 from datetime import datetime
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, located, all_located
+from SeleniumCore import By, Keys
+from SeleniumCore import get_wait, get_actions, located, all_located
 
-from Services_Order import Services_Order as SERVICES
+from services_order import Services_Order as SERVICES
 from Search_Register import Search_Register as SEARCH
 
 class Closing_Services:

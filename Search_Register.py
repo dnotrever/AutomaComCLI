@@ -1,6 +1,6 @@
 import time
 
-from Selenium import interaction, action
+from SeleniumCore import interaction, action
 
 class Search_Register:
 

@@ -9,8 +9,8 @@ def register_logins(op, test=False, secs=1.0):
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
 
-    if not test: import Systems as OpenAccess
-    else: import Systems as OpenAccess
+    if not test: import systems_access as OpenAccess
+    else: import systems_access as OpenAccess
 
     options = webdriver.ChromeOptions()
     options.add_experimental_option('excludeSwitches', ['enable-logging'])

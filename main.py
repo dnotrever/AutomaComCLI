@@ -1,12 +1,12 @@
 import os
 
-from Selenium import get_driver
-from Systems import Systems
+from selenium_core import sc
+from systems_access import SystemsAccess
 from Set_DateTime import Set_DateTime as DATETIME
 
-driver = get_driver()
+sc.set_driver()
 
-Systems(driver).system_1_access()
+SystemsAccess().system_1_access()
 
 os.system('cls')
 
@@ -43,8 +43,8 @@ def command_line():
     ## Services
     if option[0] == 'services':
 
-        from Services import Services
-        msg = Services(driver).services_infos()
+        from services_list import services
+        msg = services.services_infos()
 
     ## Emergency
     if option[0] == 'emerg':
@@ -76,7 +76,7 @@ def command_line():
             driver.execute_script("window.open('');")
             driver.switch_to.window(driver.window_handles[1])
 
-            from Systems import Systems
+            from systems_access import Systems
             Systems(driver).system_2_access()
 
             from Scheduling_Services import Scheduling_Services
@@ -124,18 +124,17 @@ def command_line():
     ## Attendances Transfer
     if option[0] == 'transfer':
 
-        driver.execute_script("window.open('');")
-        driver.switch_to.window(driver.window_handles[1])
+        sc.change_tab(1)
 
-        from Systems import Systems
-        Systems(driver).system_2_access()
+        from systems_access import Systems
+        SystemsAccess().system_2_access()
 
-        from Attendances import Attendances
+        from attendances import Attendances
         code = option[1] if len(option) > 1 else '0'
-        msg = Attendances(driver).transfer(code)
+        msg = Attendances().transfer(code)
 
-        driver.close()
-        driver.switch_to.window(driver.window_handles[0])
+        sc.close()
+        sc.change_tab(0)
 
     ## Attendances Message
     if option[0] == 'message':
@@ -151,10 +150,10 @@ def command_line():
         driver.execute_script("window.open('');")
         driver.switch_to.window(driver.window_handles[1])
 
-        from Systems import Systems
+        from systems_access import Systems
         Systems(driver).system_2_access()
 
-        from Attendances import Attendances
+        from attendances import Attendances
         code = option[1] if len(option) > 1 else '0'
         msg = Attendances(driver).message(main_tag, counter_tag, finish, text)
 

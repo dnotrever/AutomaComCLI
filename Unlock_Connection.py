@@ -1,7 +1,7 @@
 import time, traceback
 
-from Selenium import Keys
-from Selenium import get_wait, get_actions, script_click, get_value, get_text, send_keys, clear_input, perform_esc
+from SeleniumCore import Keys
+from SeleniumCore import get_wait, get_actions, script_click, get_value, get_text, send_keys, clear_input, perform_esc
 
 from Search_Register import Search_Register as SEARCH
 from Set_DateTime import Set_DateTime as DATETIME

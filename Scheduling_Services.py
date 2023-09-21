@@ -1,7 +1,7 @@
 import time, traceback
 import pandas as pd
 
-from Selenium import interaction, action
+from SeleniumCore import interaction, action
 
 from Search_Register import Search_Register as SEARCH
 

@@ -1,8 +1,8 @@
 import time
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located, all_located
+from SeleniumCore import By, Keys
+from SeleniumCore import get_wait, get_actions, clickable, located, all_located
 
 from Search_Register import Search_Register as SEARCH
 from Set_DateTime import Datetime_Now as NOW

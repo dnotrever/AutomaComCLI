@@ -1,7 +1,7 @@
 import time, traceback
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located
+from SeleniumCore import By, Keys
+from SeleniumCore import get_wait, get_actions, clickable, located
 
 from Clear_Connection import Clear_Connection as CLEAR
 

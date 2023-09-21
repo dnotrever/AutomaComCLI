@@ -1,11 +1,11 @@
 import time, re, traceback
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, clickable, located
+from SeleniumCore import By, Keys
+from SeleniumCore import get_wait, get_actions, clickable, located
 
 from Search_Register import Search_Register
-from Register_Infos import Register_Infos
+from register_infos import Register_Infos
 
 class Multiple_Registers:
 

@@ -2,11 +2,11 @@ import time, re, traceback
 from datetime import datetime
 import pandas as pd
 
-from Selenium import By, Keys
-from Selenium import get_wait, get_actions, located
+from SeleniumCore import By, Keys
+from SeleniumCore import get_wait, get_actions, located
 
 from Search_Register import Search_Register as SEARCH
-from Register_Infos import Register_Infos as INFOS
+from register_infos import Register_Infos as INFOS
 
 class Emergency:
 
