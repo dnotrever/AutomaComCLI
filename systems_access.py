@@ -35,7 +35,7 @@ class SystemsAccess:
 
     def system_2_access(self):
 
-        sc.get(self.sys_1_url)
+        sc.get(self.sys_2_url)
 
         sc.element('xpath', '/html/body/div/div[2]/div[2]/form/div[1]/input').send_keys(self.sys_2_email)
         sc.element('xpath', '/html/body/div/div[2]/div[2]/form/div[2]/input').send_keys(self.sys_2_pass)

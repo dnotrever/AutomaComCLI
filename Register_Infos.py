@@ -1,8 +1,9 @@
-import time, re
+import time
+import re
 
 from selenium_core import sc
 
-class Register_Infos:
+class RegisterInfos:
 
     def get_register_infos(form):
 

@@ -1,9 +1,11 @@
-import time, traceback, re 
+import time
+import traceback
+import re 
 import pandas as pd
 from datetime import datetime, timedelta
 from selenium_core import sc
 from services_order import ServicesOrder as Services
-from register_infos import Register_Infos as Register
+from register_infos import RegisterInfos as Register
 
 from traceback_formatted import traceback_formatted
 
@@ -171,7 +173,9 @@ class ServicesList:
 
             df_services = pd.DataFrame(registers, columns=columns)
 
-            sc.action('esc')
+            # sc.action('esc')
+            sc.refresh()
+            sc.alert('accept')
 
             services_count = self.services_list(df_services)
 

@@ -1,5 +1,4 @@
 import os
-
 from selenium_core import sc
 from systems_access import SystemsAccess
 from Set_DateTime import Set_DateTime as DATETIME
@@ -112,8 +111,8 @@ def command_line():
     if option[0] == 'disc':
 
         register_id = option[1]
-        from Clear_Connection import Clear_Connection
-        msg = Clear_Connection(driver).search_register('id', register_id)
+        from clear_connection import ClearConnection
+        msg = ClearConnection().search_register('id', register_id)
 
     ## Contract Activation
     if option[0] == 'contract':
@@ -124,9 +123,9 @@ def command_line():
     ## Attendances Transfer
     if option[0] == 'transfer':
 
-        sc.change_tab(1)
+        sc.tab(1)
 
-        from systems_access import Systems
+        from systems_access import SystemsAccess
         SystemsAccess().system_2_access()
 
         from attendances import Attendances
@@ -134,7 +133,7 @@ def command_line():
         msg = Attendances().transfer(code)
 
         sc.close()
-        sc.change_tab(0)
+        sc.tab(0)
 
     ## Attendances Message
     if option[0] == 'message':

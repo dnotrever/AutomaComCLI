@@ -85,8 +85,13 @@ class SeleniumCore:
 
         return ActionChains(self.driver).send_keys(key).perform()
 
-    def change_tab(self, index):
-        self.driver.execute_script("window.open('');")
-        self.driver.switch_to.window(self.window_handles[index])
+    def tab(self, index):
+        self.driver.execute_script('window.open("");')
+        self.driver.switch_to.window(self.driver.window_handles[index])
+
+    def alert(self, value):
+        alert = self.driver.switch_to.alert
+        if value == 'accept':
+            return alert.accept()
 
 sc = SeleniumCore()
