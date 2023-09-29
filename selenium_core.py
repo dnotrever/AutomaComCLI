@@ -40,6 +40,7 @@ class SeleniumCore:
             'xpath': By.XPATH,
             'selector': By.CSS_SELECTOR,
             'tag': By.TAG_NAME,
+            'name': By.NAME,
         }
                 
         if by_mode in by_mode_mapping:
@@ -78,6 +79,8 @@ class SeleniumCore:
         key_mapping = {
             'enter': Keys.ENTER,
             'esc': Keys.ESCAPE,
+            'tab': Keys.TAB,
+            'backspace': Keys.BACKSPACE,
         }
 
         if key in key_mapping:

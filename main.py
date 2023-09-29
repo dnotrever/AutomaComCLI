@@ -1,4 +1,5 @@
 import os
+import time
 from selenium_core import sc
 from systems_access import SystemsAccess
 from Set_DateTime import Set_DateTime as DATETIME
@@ -39,6 +40,13 @@ def command_line():
 
     option = input(parag).split(' ')
 
+    sc.refresh()
+
+    try: sc.alert('accept')
+    except: pass
+
+    time.sleep(3)
+
     ## Services
     if option[0] == 'services':
 
@@ -59,13 +67,15 @@ def command_line():
 
         if option[1] == 'verify':
 
-            from Closing_Services import Closing_Services
-            msg = Closing_Services(driver).closing_verify()
+            date = option[2] if len(option) > 2 else 'today'
+
+            from closing_services import ClosingServices
+            msg = ClosingServices().closing_verify(date)
 
         if option[1] == 'execute':
 
-            from Closing_Services import Closing_Services
-            msg = Closing_Services(driver).closing_execute()
+            from closing_services import ClosingServices
+            msg = ClosingServices().closing_execute()
     
     ## Scheduling Services
     if option[0] == 'schedule':

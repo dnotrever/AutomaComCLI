@@ -1,30 +1,27 @@
-import time, traceback
-from datetime import datetime
+import time
+import traceback
+import os
 import pandas as pd
+from datetime import datetime
+from selenium_core import sc
 
-from SeleniumCore import By, Keys
-from SeleniumCore import get_wait, get_actions, located, all_located
+from services_order import ServicesOrder as Services
+from search_register import SearchRegister as Search
 
-from services_order import Services_Order as SERVICES
-from Search_Register import Search_Register as SEARCH
+class ClosingServices:
 
-class Closing_Services:
-
-    def __init__(self, driver):
-
-        self.driver = driver
-        self.wait = get_wait(self.driver)
-        self.actions = get_actions(self.driver)
-
+    def __init__(self):
         self.today_date = datetime.now()
-
         self.closing_sheet = 'sheets/Closing_Services.xlsx'
+        self.directory = r'C:\Users\Everton 2\Pictures'
 
-    def closing_verify(self):
+    def closing_verify(self, date):
 
         try:
 
-            pagination = SERVICES.open_services(self, self.today_date)
+            select_date = self.today_date if date == 'today' else datetime.strptime(date, "%d/%m/%Y")
+
+            pagination = Services.open_services(select_date)
 
             service_index = 0
 
@@ -37,33 +34,30 @@ class Closing_Services:
                 time.sleep(2)
 
                 ## Customers List
-                services = self.wait.until(all_located((By.CSS_SELECTOR, 'tr[data-campoautoincrement="id"]')))
+                services = sc.element('selector', 'tr[data-campoautoincrement="id"]', 'all')
 
                 service_index += 1
 
                 service = services[service_index-1]
 
-                status_parent = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="su_oss_assunto.assunto"]')))
-                status = get_wait(status_parent).until(located((By.TAG_NAME, 'div')))
+                status = sc.element('selector', 'td[abbr="su_oss_assunto.assunto"]', 'belongs', service)
 
                 if status.text != 'Instalação':
 
-                    register_name = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="cliente.razao"]')))
+                    register_name = sc.element('selector', 'td[abbr="cliente.razao"]', 'belongs', service)
                     
-                    get_actions(self.driver).double_click(service).perform()
+                    sc.click('none', service, 'double')
 
                     time.sleep(2)
 
-                    register_id = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/input'))).get_attribute('value')
+                    register_id = sc.element('xpath', '/html/body/form[2]/div[3]/div[1]/dl[6]/dd/input').get_attribute('value')
 
-                    time.sleep(1)
-                    get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                    sc.action('esc')
 
                     registers_infos += [[int(register_id), register_name.text]]
 
                 if service_index == int(pagination[2]) and pagination[2] != pagination[4]:
-                    next_btn = self.wait.until(located((By.CSS_SELECTOR, 'i[title="Próximo"]')))
-                    self.driver.execute_script('arguments[0].click();', next_btn)
+                    sc.click('selector', 'i[title="Próximo"]')
                     service_index = 0
                     time.sleep(2)
 
@@ -77,8 +71,8 @@ class Closing_Services:
 
             dataframe.to_excel(self.closing_sheet, index = False, header=True)
 
-            time.sleep(1)
-            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            # sc.refresh()
+            # sc.alert('accept')
 
             return ['success', ' Customers with services to be closed listed!']
 
@@ -91,8 +85,7 @@ class Closing_Services:
         try:
 
             ## Search
-            registers = self.wait.until(located((By.XPATH, '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')))
-            self.driver.execute_script('arguments[0].click();', registers)
+            sc.click('xpath', '/html/body/div[1]/div[3]/div/div[1]/div[2]/ul/li[1]/a')
 
             ## Dataframe
             dataframe = pd.read_excel(self.closing_sheet)
@@ -108,123 +101,119 @@ class Closing_Services:
                 images = row['Images']
                 description = row['Description']
 
-                SEARCH.open_register_search(self, 'id', customer_id)
+                Search.open_register_search(self, 'id', customer_id)
 
                 ## OS Tab
-                self.wait.until(located((By.CSS_SELECTOR, r'#\32 _form > div.abas.clearfix > ul > li:nth-child(11) > a'))).click()
+                sc.click('selector', r'#\32 _form > div.abas.clearfix > ul > li:nth-child(11) > a')
 
-                service = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[5]/table/tbody/tr[1]')))
+                service = sc.element('xpath', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[5]/table/tbody/tr[1]')
 
                 ## Service Status
-                status_parent = get_wait(service).until(located((By.CSS_SELECTOR, 'td[abbr="su_oss_chamado.status"]')))
-                status_child = get_wait(status_parent).until(located((By.TAG_NAME, 'font')))
+                status_infos = sc.element('selector', 'td[abbr="su_oss_chamado.status"]', 'belongs', service)
 
-                if status_child.text == 'Agendado' or status_child.text == 'Aberto':
+                if status_infos.text == 'Agendado' or status_infos.text == 'Aberto':
 
-                    if not pd.isna(images):
+                    if images:
 
                         ## Edit Service
-                        edit_btn = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/button[3]')))
-                        self.driver.execute_script('arguments[0].click();', edit_btn)
+                        sc.click('xpath', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/button[3]')
 
                         time.sleep(1)
 
-                        images_list = images.split('\n')
-
                         ## File Tab
-                        files_tab = self.wait.until(located((By.XPATH, '/html/body/form[3]/div[3]/ul/li[5]/a')))
-                        self.driver.execute_script('arguments[0].click();', files_tab)
+                        sc.click('xpath', '/html/body/form[3]/div[3]/ul/li[5]/a')
 
-                        for image in images_list:
+                        for file in os.listdir(self.directory):
 
-                            time.sleep(2)
+                            image_path = os.path.join(self.directory, file)
 
-                            ## New File Button
-                            new_btn = self.wait.until(located((By.CSS_SELECTOR, r'#\34  > dl > div > div > div.tDiv.bg2 > div.tDiv2 > button:nth-child(1)')))
-                            self.driver.execute_script('arguments[0].click();', new_btn)
+                            file = file.split('_')
 
-                            image_descr = image.split('_')[0].upper()
+                            if os.path.isfile(image_path) and len(file) > 1 and name == file[0]:
+                                
+                                image_descr = (file[1].split('.')[0]).upper()
 
-                            ## Insert Image Description
-                            self.wait.until(located((By.NAME, 'descricao'))).send_keys(image_descr)
+                                time.sleep(2)
 
-                            image_path = 'C:/Users/Everton 2/Pictures/' + image.split('_')[1]
+                                ## New File Button
+                                sc.click('selector', r'#\34  > dl > div > div > div.tDiv.bg2 > div.tDiv2 > button:nth-child(1)')
 
-                            ## Insert Image Path
-                            self.wait.until(located((By.XPATH, '/html/body/form[4]/div[3]/div/dl[6]/dd/input[1]'))).send_keys(image_path)
+                                ## Insert Image Description
+                                sc.element('name', 'descricao').send_keys(image_descr)
 
-                            ## Save Button
-                            save_btn = self.wait.until(located((By.XPATH, '/html/body/form[4]/div[2]/button[2]')))
-                            self.driver.execute_script('arguments[0].click();', save_btn)
+                                ## Insert Image Path
+                                sc.element('xpath', '/html/body/form[4]/div[3]/div/dl[6]/dd/input[1]').send_keys(image_path)
+
+                                ## Save Button
+                                sc.click('xpath', '/html/body/form[4]/div[2]/button[2]')
+
+                        sc.action('esc')
 
                         time.sleep(2)
 
                     description_format = f'{description} {technician} - Protocolo: {protocol}' if not pd.isna(protocol) else f'{description} {technician}'
 
+                    # ## Actions
+                    # sc.click('xpath', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]')
+
                     if status == 'F':
                         
                         ## Finalization Button
-                        final_btn = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[9]')))
-                        self.driver.execute_script('arguments[0].click();', final_btn)
+                        sc.click('xpath', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[9]')
 
                     if status == 'E':
 
                         ## Forward Button
-                        forward_btn = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[2]')))
-                        self.driver.execute_script('arguments[0].click();', forward_btn)
+                        sc.click('xpath', '/html/body/form[2]/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[2]')
 
                         time.sleep(1)
 
                         ## Insert Sector
-                        self.wait.until(located((By.NAME, 'id_setor'))).click()
-                        get_actions(self.driver).send_keys(Keys.BACKSPACE).perform()
-                        self.wait.until(located((By.NAME, 'id_setor'))).send_keys('2')
+                        sector_id = sc.element('name', 'id_setor')
+                        sc.click('nome', sector_id)
+                        sc.action('backspace')
+                        sc.element('name', 'id_setor').send_keys('2')
 
                     if status == 'R':
 
                         ## Reschedule Button
-                        final_btn = self.wait.until(located((By.XPATH, '/html/body/form/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[4]')))
-                        self.driver.execute_script('arguments[0].click();', final_btn)
+                        sc.click('xpath', '/html/body/form/div[3]/div[11]/dl/div/div/div[2]/div[1]/nav[3]/ul/li[4]')
 
                         ## Dates
-                        date1_input = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div/dl[3]/dd/input')))
-                        self.driver.execute_script('arguments[0].click();', date1_input)
+                        date1_input = sc.element('xpath', '/html/body/form[2]/div[3]/div/dl[3]/dd/input')
+                        sc.click('none', date1_input)
                         date1_input.send_keys(date + ' 09:00:00')
 
-                        date2_input = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div/dl[4]/dd/input')))
-                        self.driver.execute_script('arguments[0].click();', date2_input)
+                        date2_input = sc.element('xpath', '/html/body/form[2]/div[3]/div/dl[4]/dd/input')
+                        sc.click('none', date2_input)
                         date2_input.send_keys(date + ' 18:00:00')
 
                         ## Collaborator
-                        collaborator = self.wait.until(located((By.XPATH, '/html/body/form[2]/div[3]/div/dl[7]/dd/input')))
-                        self.driver.execute_script('arguments[0].click();', collaborator)
+                        collaborator = sc.click('xpath', '/html/body/form[2]/div[3]/div/dl[7]/dd/input')
                         collaborator.send_keys('21')
-                        get_actions(self.driver).send_keys(Keys.TAB).perform()
+                        sc.action('tab')
 
                     time.sleep(2)
 
                     ## Insert Description
-                    descr_input = self.wait.until(located((By.NAME, 'mensagem')))
+                    descr_input = sc.element('name', 'mensagem')
                     descr_input.clear()
                     descr_input.send_keys(description_format)
 
                     time.sleep(1)
 
                     ## Save Button
-                    save_btn = self.wait.until(located((By.XPATH, '/html/body/form[3]/div[2]/button[1]')))
-                    self.driver.execute_script('arguments[0].click();', save_btn)
+                    sc.click('xpath', '/html/body/form[3]/div[2]/button[1]')
 
                 else: continue
 
-                time.sleep(1)
-                get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+                sc.action('esc')
 
                 ## Clear Input Name
-                clear_name = self.wait.until(located((By.CSS_SELECTOR, r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')))
-                self.driver.execute_script('arguments[0].click();', clear_name)
+                sc.click('selector', r'#\31 _grid > div > div.sDiv > div > div:nth-child(2) > span > i')
 
-            time.sleep(1)
-            for _ in range(4): get_actions(self.driver).send_keys(Keys.ESCAPE).perform()
+            # sc.refresh()
+            # sc.alert('accept')
 
             return ['success', ' Successfully services closed!']
 

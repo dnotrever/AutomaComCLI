@@ -173,9 +173,8 @@ class ServicesList:
 
             df_services = pd.DataFrame(registers, columns=columns)
 
-            # sc.action('esc')
-            sc.refresh()
-            sc.alert('accept')
+            # sc.refresh()
+            # sc.alert('accept')
 
             services_count = self.services_list(df_services)
 

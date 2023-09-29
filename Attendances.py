@@ -33,14 +33,13 @@ class Attendances:
                 ## Transfer Button 1
                 sc.click('xpath', '/html/body/div/div[6]/div[2]/div[21]/button[2]')
 
-                time.sleep(2)
+                time.sleep(1)
 
                 ## Support Option
-                print(sc.element('xpath', '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]'))
-                sc.click('xpath', '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]')
+                sc.element('xpath', '/html/body/div[2]/div/div[2]/form/div[2]/div[2]/select/option[7]').click()
 
                 ## Transfer Button 2
-                # sc.click('xpath', '/html/body/div[2]/div/div[2]/form/div[1]/button')
+                sc.click('xpath', '/html/body/div[2]/div/div[2]/form/div[1]/button')
 
             ## Fixed
             elif order == '17':
